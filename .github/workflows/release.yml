@@ -1,0 +1,37 @@
+name: Release Plugin
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: zip, mbstring
+
+      - name: Build plugin (zip + release notes)
+        run: php bin/build.php
+
+      - name: Show build output
+        run: ls -la dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # The built zip (top-level folder cluvo/) is attached as the asset the
+          # in-plugin updater downloads. Release notes = current changelog.
+          files: dist/cluvo-*.zip
+          body_path: dist/release-notes.md
+          fail_on_unmatched_files: true

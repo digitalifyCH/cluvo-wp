@@ -1,0 +1,209 @@
+/* Cluvo plugin front-end styles. Intentionally lightweight so themes can override. */
+
+.cluvo-notice,
+.cluvo-empty {
+	padding: 1rem;
+	border: 1px solid #e2e2e2;
+	border-radius: 8px;
+	background: #fafafa;
+	color: #555;
+}
+
+/* ---------- Forms ---------- */
+.cluvo-form__description {
+	margin-bottom: 1rem;
+	color: #555;
+}
+
+.cluvo-form__grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1rem;
+}
+
+.cluvo-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.cluvo-field--full {
+	grid-column: 1 / -1;
+}
+
+.cluvo-field label {
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.cluvo-field input,
+.cluvo-field select,
+.cluvo-field textarea {
+	width: 100%;
+	padding: 0.55rem 0.7rem;
+	border: 1px solid #d0d0d0;
+	border-radius: 6px;
+	font: inherit;
+	box-sizing: border-box;
+}
+
+.cluvo-field--error input,
+.cluvo-field--error select,
+.cluvo-field--error textarea {
+	border-color: #d63638;
+}
+
+.cluvo-field__error {
+	margin: 0;
+	font-size: 0.8rem;
+	color: #d63638;
+}
+
+.cluvo-required {
+	color: #d63638;
+}
+
+.cluvo-divider {
+	border: 0;
+	border-top: 1px solid #e2e2e2;
+	margin: 0.5rem 0;
+}
+
+.cluvo-form__actions {
+	margin-top: 1.25rem;
+}
+
+.cluvo-form__submit {
+	padding: 0.6rem 1.4rem;
+	border: 0;
+	border-radius: 6px;
+	background: #009966;
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.cluvo-form__submit:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+.cluvo-form__status {
+	margin-bottom: 1rem;
+	padding: 0.7rem 0.9rem;
+	border-radius: 6px;
+	font-size: 0.9rem;
+}
+
+.cluvo-form__status--success {
+	background: #e6f6ee;
+	color: #1a7f4f;
+}
+
+.cluvo-form__status--error {
+	background: #fcebec;
+	color: #b32d2e;
+}
+
+.cluvo-form__status--pending {
+	background: #f2f2f2;
+	color: #555;
+}
+
+/* ---------- Events ---------- */
+.cluvo-events {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.cluvo-event {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+}
+
+.cluvo-event__date {
+	flex: 0 0 auto;
+	min-width: 5.5rem;
+	padding: 0.5rem 0.75rem;
+	border-left: 3px solid #009966;
+	background: #fafafa;
+	border-radius: 4px;
+	font-weight: 600;
+	font-size: 0.9rem;
+}
+
+.cluvo-event__time {
+	display: block;
+	font-weight: 400;
+	color: #666;
+}
+
+.cluvo-event__title {
+	margin: 0 0 0.25rem;
+	font-size: 1.05rem;
+}
+
+.cluvo-event__location,
+.cluvo-event__desc {
+	margin: 0.15rem 0;
+	color: #555;
+	font-size: 0.9rem;
+}
+
+/* ---------- News ---------- */
+.cluvo-news {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 1.25rem;
+}
+
+.cluvo-news__item {
+	padding: 1rem;
+	border: 1px solid #ececec;
+	border-radius: 8px;
+}
+
+.cluvo-news__title {
+	margin: 0 0 0.35rem;
+	font-size: 1.1rem;
+}
+
+.cluvo-news__date {
+	margin: 0 0 0.5rem;
+	color: #888;
+	font-size: 0.8rem;
+}
+
+.cluvo-news__excerpt {
+	margin: 0 0 0.75rem;
+	color: #555;
+	font-size: 0.92rem;
+}
+
+.cluvo-news__more {
+	font-weight: 600;
+	text-decoration: none;
+	color: #009966;
+}
+
+.cluvo-article__back a {
+	text-decoration: none;
+	color: #009966;
+}
+
+.cluvo-article__date {
+	color: #888;
+	font-size: 0.85rem;
+}
+
+@media (max-width: 600px) {
+	.cluvo-form__grid {
+		grid-template-columns: 1fr;
+	}
+}
