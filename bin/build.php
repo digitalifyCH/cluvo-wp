@@ -16,7 +16,7 @@ $root = dirname( __DIR__ );
 $dist = $root . '/dist';
 
 // Files/folders that go into the plugin ZIP (dev files like bin/.github excluded).
-$include = array( 'cluvo.php', 'uninstall.php', 'readme.txt', 'includes', 'assets' );
+$include = array( 'cluvo.php', 'uninstall.php', 'readme.txt', 'includes', 'assets', 'languages' );
 
 /* --------------------------------------------------------------------- */
 

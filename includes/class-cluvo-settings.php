@@ -1,7 +1,10 @@
 <?php
 /**
- * Admin settings page: shared base URL/cache plus a list of Cluvo accounts
- * (one per Verein), each with a stable numeric id used in shortcodes.
+ * Admin settings page: cache duration plus a list of Cluvo accounts (one per
+ * Verein), each with a stable numeric id used in shortcodes.
+ *
+ * Stored API keys are never printed into the page again; leaving the key
+ * field empty keeps the saved key.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,15 +13,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Cluvo_Settings {
 
+	const PAGE = 'cluvo';
+
 	/** @var Cluvo_Client */
 	private $client;
+
+	/** @var array Settings errors already added in this request (sanitize may run twice). */
+	private $errors = array();
 
 	public function __construct( Cluvo_Client $client ) {
 		$this->client = $client;
 
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_ajax_cluvo_test_connection', array( $this, 'ajax_test_connection' ) );
+		add_action( 'admin_post_cluvo_flush_cache', array( $this, 'handle_flush_cache' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( CLUVO_PLUGIN_FILE ), array( $this, 'action_links' ) );
 	}
 
 	public function add_menu() {
@@ -26,16 +37,47 @@ class Cluvo_Settings {
 			__( 'Cluvo', 'cluvo' ),
 			__( 'Cluvo', 'cluvo' ),
 			'manage_options',
-			'cluvo',
+			self::PAGE,
 			array( $this, 'render_page' )
 		);
+	}
+
+	public function action_links( $links ) {
+		array_unshift( $links, '<a href="' . esc_url( admin_url( 'options-general.php?page=' . self::PAGE ) ) . '">' . esc_html__( 'Einstellungen', 'cluvo' ) . '</a>' );
+		return $links;
 	}
 
 	public function register_settings() {
 		register_setting(
 			'cluvo_settings_group',
 			Cluvo_Client::OPTION_KEY,
-			array( $this, 'sanitize' )
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( $this, 'sanitize' ),
+			)
+		);
+	}
+
+	public function enqueue_assets( $hook ) {
+		if ( 'settings_page_' . self::PAGE !== $hook ) {
+			return;
+		}
+
+		wp_enqueue_style( 'cluvo-admin', CLUVO_PLUGIN_URL . 'assets/cluvo-admin.css', array(), CLUVO_VERSION );
+		wp_enqueue_script( 'cluvo-admin', CLUVO_PLUGIN_URL . 'assets/cluvo-admin.js', array(), CLUVO_VERSION, true );
+		wp_localize_script(
+			'cluvo-admin',
+			'CluvoAdmin',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'cluvo_test' ),
+				'i18n'    => array(
+					'testing'   => __( 'Verbindung wird geprüft …', 'cluvo' ),
+					'error'     => __( 'Die Prüfung ist fehlgeschlagen. Bitte versuche es erneut.', 'cluvo' ),
+					'noKey'     => __( 'Bitte zuerst einen API-Key eintragen.', 'cluvo' ),
+					'saveFirst' => __( 'Speichere die Einstellungen, damit der Verein eine ID bekommt.', 'cluvo' ),
+				),
+			)
 		);
 	}
 
@@ -43,27 +85,46 @@ class Cluvo_Settings {
 	 * Sanitize input, assign stable ids to new accounts and flush the cache.
 	 */
 	public function sanitize( $input ) {
+		$input    = is_array( $input ) ? $input : array();
 		$existing = $this->client->get_settings();
-		$next_id  = max( 1, (int) ( isset( $existing['next_id'] ) ? $existing['next_id'] : 1 ) );
+		$next_id  = max( 1, (int) $existing['next_id'] );
+
+		$saved_keys = array();
+		foreach ( $this->client->get_accounts() as $account ) {
+			$saved_keys[ (int) $account['id'] ] = $account['api_key'];
+		}
 
 		$accounts = array();
+		$used     = array();
 		$rows     = isset( $input['accounts'] ) && is_array( $input['accounts'] ) ? $input['accounts'] : array();
 
 		foreach ( $rows as $row ) {
-			$name = isset( $row['name'] ) ? sanitize_text_field( trim( $row['name'] ) ) : '';
-			$key  = isset( $row['api_key'] ) ? sanitize_text_field( trim( $row['api_key'] ) ) : '';
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$name = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
+			$key  = isset( $row['api_key'] ) ? preg_replace( '/\s+/', '', sanitize_text_field( $row['api_key'] ) ) : '';
+			$id   = isset( $row['id'] ) ? absint( $row['id'] ) : 0;
+
+			if ( '' === $key && $id && ! empty( $saved_keys[ $id ] ) ) {
+				$key = $saved_keys[ $id ];
+			}
 
 			// Drop fully empty rows.
 			if ( '' === $name && '' === $key ) {
 				continue;
 			}
 
-			$id = isset( $row['id'] ) ? (int) $row['id'] : 0;
-			if ( $id <= 0 ) {
+			if ( $id <= 0 || isset( $used[ $id ] ) ) {
 				$id = $next_id;
-				$next_id++;
-			} else {
-				$next_id = max( $next_id, $id + 1 );
+			}
+			$next_id     = max( $next_id, $id + 1 );
+			$used[ $id ] = true;
+
+			if ( '' === $key ) {
+				/* translators: %s: name of the Verein */
+				$this->add_error( sprintf( __( 'Für «%s» fehlt der API-Key.', 'cluvo' ), $name ) );
 			}
 
 			$accounts[] = array(
@@ -73,66 +134,67 @@ class Cluvo_Settings {
 			);
 		}
 
-		$clean = array(
-			'base_url'  => isset( $input['base_url'] ) ? esc_url_raw( trim( $input['base_url'] ) ) : '',
+		Cluvo_Client::flush_cache();
+
+		return array(
 			'cache_ttl' => isset( $input['cache_ttl'] ) ? max( 30, absint( $input['cache_ttl'] ) ) : 600,
 			'accounts'  => $accounts,
 			'next_id'   => $next_id,
 		);
+	}
 
-		Cluvo_Client::flush_cache();
-
-		return $clean;
+	private function add_error( $message ) {
+		if ( in_array( $message, $this->errors, true ) ) {
+			return;
+		}
+		$this->errors[] = $message;
+		add_settings_error( Cluvo_Client::OPTION_KEY, 'cluvo_' . count( $this->errors ), $message, 'warning' );
 	}
 
 	public function render_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		$settings = $this->client->get_settings();
 		$opt      = Cluvo_Client::OPTION_KEY;
-		$accounts = $settings['accounts'];
+		$accounts = $this->client->get_accounts();
+		$example  = count( $accounts ) > 1 ? ' account="' . (int) $accounts[0]['id'] . '"' : '';
 		?>
-		<div class="wrap">
+		<div class="wrap cluvo-admin">
 			<h1><?php esc_html_e( 'Cluvo', 'cluvo' ); ?></h1>
-			<p><?php esc_html_e( 'Verbinde diese Webseite mit einem oder mehreren Cluvo-Vereinen. Basis-URL und API-Keys findest du in Cluvo unter Einstellungen → Integration.', 'cluvo' ); ?></p>
+
+			<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<?php if ( isset( $_GET['cluvo_flushed'] ) ) : ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Der Cache wurde geleert.', 'cluvo' ); ?></p></div>
+			<?php endif; ?>
+
+			<p><?php esc_html_e( 'Verbinde diese Webseite mit einem oder mehreren Cluvo-Vereinen. Einen API-Key erstellst du in Cluvo unter Einstellungen → Integration.', 'cluvo' ); ?></p>
 
 			<form action="options.php" method="post">
 				<?php settings_fields( 'cluvo_settings_group' ); ?>
 
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><label for="cluvo_base_url"><?php esc_html_e( 'API-Basis-URL', 'cluvo' ); ?></label></th>
-						<td>
-							<input name="<?php echo esc_attr( $opt ); ?>[base_url]" id="cluvo_base_url" type="url" class="regular-text code" value="<?php echo esc_attr( $settings['base_url'] ); ?>" placeholder="https://cluvo.ch/api/v1" />
-							<p class="description"><?php esc_html_e( 'Für alle Vereine gleich.', 'cluvo' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="cluvo_cache_ttl"><?php esc_html_e( 'Cache-Dauer (Sekunden)', 'cluvo' ); ?></label></th>
-						<td>
-							<input name="<?php echo esc_attr( $opt ); ?>[cache_ttl]" id="cluvo_cache_ttl" type="number" min="30" step="30" value="<?php echo esc_attr( $settings['cache_ttl'] ); ?>" />
-						</td>
-					</tr>
-				</table>
-
 				<h2><?php esc_html_e( 'Vereine', 'cluvo' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Jeder Verein hat einen eigenen API-Key. Die ID nutzt du im Shortcode, z.B. account="1".', 'cluvo' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Jeder Verein hat einen eigenen API-Key. Die ID nutzt du im Shortcode, z.B. account="1". Gespeicherte Keys werden nicht mehr angezeigt – lässt du das Feld leer, bleibt der Key erhalten.', 'cluvo' ); ?></p>
 
-				<table class="widefat striped" id="cluvo-accounts" style="max-width:900px;margin-top:10px;">
+				<table class="widefat striped cluvo-accounts" id="cluvo-accounts">
 					<thead>
 						<tr>
-							<th style="width:60px;"><?php esc_html_e( 'ID', 'cluvo' ); ?></th>
-							<th style="width:220px;"><?php esc_html_e( 'Name', 'cluvo' ); ?></th>
-							<th><?php esc_html_e( 'API-Key', 'cluvo' ); ?></th>
-							<th style="width:160px;"></th>
+							<th scope="col" class="cluvo-accounts__id"><?php esc_html_e( 'ID', 'cluvo' ); ?></th>
+							<th scope="col" class="cluvo-accounts__name"><?php esc_html_e( 'Name', 'cluvo' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'API-Key', 'cluvo' ); ?></th>
+							<th scope="col" class="cluvo-accounts__actions"><span class="screen-reader-text"><?php esc_html_e( 'Aktionen', 'cluvo' ); ?></span></th>
 						</tr>
 					</thead>
 					<tbody>
-						<?php if ( empty( $accounts ) ) : ?>
-							<?php echo $this->account_row( $opt, array( 'id' => 0, 'name' => '', 'api_key' => '' ), 0 ); // phpcs:ignore ?>
-						<?php else : ?>
-							<?php foreach ( $accounts as $i => $account ) : ?>
-								<?php echo $this->account_row( $opt, $account, $i ); // phpcs:ignore ?>
-							<?php endforeach; ?>
-						<?php endif; ?>
+						<?php
+						if ( empty( $accounts ) ) {
+							echo $this->account_row( $opt, array(), 0 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+						}
+						foreach ( $accounts as $i => $account ) {
+							echo $this->account_row( $opt, $account, $i ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+						}
+						?>
 					</tbody>
 				</table>
 
@@ -140,68 +202,58 @@ class Cluvo_Settings {
 					<button type="button" class="button" id="cluvo-add-account"><?php esc_html_e( '+ Verein hinzufügen', 'cluvo' ); ?></button>
 				</p>
 
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="cluvo_cache_ttl"><?php esc_html_e( 'Cache-Dauer (Sekunden)', 'cluvo' ); ?></label></th>
+						<td>
+							<input name="<?php echo esc_attr( $opt ); ?>[cache_ttl]" id="cluvo_cache_ttl" type="number" min="30" step="30" class="small-text" value="<?php echo esc_attr( $settings['cache_ttl'] ); ?>" aria-describedby="cluvo_cache_ttl_help" />
+							<p class="description" id="cluvo_cache_ttl_help"><?php esc_html_e( 'So lange werden Formulare, Veranstaltungen und News zwischengespeichert. Ist Cluvo nicht erreichbar, zeigt das Plugin bis zu einem Tag lang den letzten Stand.', 'cluvo' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
 				<?php submit_button(); ?>
+			</form>
+
+			<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+				<input type="hidden" name="action" value="cluvo_flush_cache" />
+				<?php wp_nonce_field( 'cluvo_flush_cache' ); ?>
+				<p>
+					<button type="submit" class="button"><?php esc_html_e( 'Cache leeren', 'cluvo' ); ?></button>
+					<span class="description"><?php esc_html_e( 'Änderungen aus Cluvo sofort anzeigen.', 'cluvo' ); ?></span>
+				</p>
 			</form>
 
 			<hr />
 			<h2><?php esc_html_e( 'Shortcodes', 'cluvo' ); ?></h2>
-			<ul style="list-style:disc;padding-left:20px;">
-				<li><code>[cluvo_form account="1" slug="mein-formular"]</code></li>
-				<li><code>[cluvo_events account="1" limit="10"]</code></li>
-				<li><code>[cluvo_news account="1" limit="6"]</code></li>
-			</ul>
-			<p class="description"><?php esc_html_e( 'Ist nur ein Verein hinterlegt, kann account="…" weggelassen werden.', 'cluvo' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Ist nur ein Verein hinterlegt, kann account="…" weggelassen werden. «Testen» zeigt die Shortcodes der aktiven Formulare eines Vereins.', 'cluvo' ); ?></p>
+
+			<table class="widefat striped cluvo-shortcodes">
+				<thead>
+					<tr>
+						<th scope="col"><?php esc_html_e( 'Shortcode', 'cluvo' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Attribute', 'cluvo' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>[cluvo_form<?php echo esc_html( $example ); ?> slug="mitglied-werden"]</code></td>
+						<td><?php echo wp_kses( __( '<code>slug</code> – Slug des Formulars in Cluvo (Pflicht)', 'cluvo' ), array( 'code' => array() ) ); ?></td>
+					</tr>
+					<tr>
+						<td><code>[cluvo_events<?php echo esc_html( $example ); ?> limit="10"]</code></td>
+						<td><?php echo wp_kses( __( '<code>limit</code> – Anzahl Termine (Serien einzeln gezählt, Standard 10) · <code>category</code> – ID der Kategorie · <code>from</code>, <code>to</code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate)', 'cluvo' ), array( 'code' => array() ) ); ?></td>
+					</tr>
+					<tr>
+						<td><code>[cluvo_news<?php echo esc_html( $example ); ?> limit="6"]</code></td>
+						<td><?php echo wp_kses( __( '<code>limit</code> – Anzahl pro Seite (Standard 6, höchstens 50) · <code>category</code> – ID der Kategorie · <code>pagination="1"</code> – Links zu älteren News', 'cluvo' ), array( 'code' => array() ) ); ?></td>
+					</tr>
+				</tbody>
+			</table>
 
 			<template id="cluvo-account-template">
-				<?php echo $this->account_row( $opt, array( 'id' => 0, 'name' => '', 'api_key' => '' ), '__INDEX__' ); // phpcs:ignore ?>
+				<?php echo $this->account_row( $opt, array(), '__INDEX__' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 			</template>
-
-			<script>
-			( function () {
-				var nonce = '<?php echo esc_js( wp_create_nonce( 'cluvo_test' ) ); ?>';
-				var baseInput = document.getElementById( 'cluvo_base_url' );
-				var tbody = document.querySelector( '#cluvo-accounts tbody' );
-				var addBtn = document.getElementById( 'cluvo-add-account' );
-				var tpl = document.getElementById( 'cluvo-account-template' );
-				var index = tbody.querySelectorAll( 'tr' ).length;
-
-				addBtn.addEventListener( 'click', function () {
-					var html = tpl.innerHTML.replace( /__INDEX__/g, index++ );
-					var temp = document.createElement( 'tbody' );
-					temp.innerHTML = html;
-					tbody.appendChild( temp.firstElementChild );
-				} );
-
-				tbody.addEventListener( 'click', function ( e ) {
-					var btn = e.target.closest( 'button' );
-					if ( ! btn ) { return; }
-
-					if ( btn.classList.contains( 'cluvo-remove-account' ) ) {
-						btn.closest( 'tr' ).remove();
-						return;
-					}
-
-					if ( btn.classList.contains( 'cluvo-test-account' ) ) {
-						var row = btn.closest( 'tr' );
-						var key = row.querySelector( '.cluvo-key-input' ).value;
-						var out = row.querySelector( '.cluvo-test-result' );
-						out.textContent = '…';
-						var body = new FormData();
-						body.append( 'action', 'cluvo_test_connection' );
-						body.append( '_ajax_nonce', nonce );
-						body.append( 'base_url', baseInput.value );
-						body.append( 'api_key', key );
-						fetch( ajaxurl, { method: 'POST', body: body, credentials: 'same-origin' } )
-							.then( function ( r ) { return r.json(); } )
-							.then( function ( res ) {
-								out.textContent = res.data && res.data.message ? res.data.message : '?';
-								out.style.color = res.success ? '#1a7f37' : '#b32d2e';
-							} )
-							.catch( function () { out.textContent = 'Fehler'; out.style.color = '#b32d2e'; } );
-					}
-				} );
-			} )();
-			</script>
 		</div>
 		<?php
 	}
@@ -210,28 +262,36 @@ class Cluvo_Settings {
 	 * Render one account row. $i is only used to group the row's field names.
 	 */
 	private function account_row( $opt, $account, $i ) {
-		$id      = (int) $account['id'];
+		$id      = isset( $account['id'] ) ? (int) $account['id'] : 0;
 		$name    = isset( $account['name'] ) ? $account['name'] : '';
-		$api_key = isset( $account['api_key'] ) ? $account['api_key'] : '';
+		$has_key = ! empty( $account['api_key'] );
 		$base    = sprintf( '%s[accounts][%s]', $opt, $i );
+		$dom     = 'cluvo-account-' . $i;
+
+		$placeholder = $has_key
+			/* translators: %s: last four characters of the stored API key */
+			? sprintf( __( 'Gespeichert (…%s)', 'cluvo' ), substr( $account['api_key'], -4 ) )
+			: __( 'API-Key einfügen', 'cluvo' );
 
 		ob_start();
 		?>
 		<tr>
 			<td>
-				<input type="hidden" class="cluvo-id-input" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $id ); ?>" />
-				<strong><?php echo $id ? esc_html( $id ) : '<span style="color:#888;">' . esc_html__( 'neu', 'cluvo' ) . '</span>'; ?></strong>
+				<input type="hidden" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $id ); ?>" />
+				<strong><?php echo $id ? esc_html( $id ) : '<span class="cluvo-muted">' . esc_html__( 'neu', 'cluvo' ) . '</span>'; ?></strong>
 			</td>
 			<td>
-				<input type="text" class="regular-text" name="<?php echo esc_attr( $base ); ?>[name]" value="<?php echo esc_attr( $name ); ?>" placeholder="<?php esc_attr_e( 'Turnverein Musterdorf', 'cluvo' ); ?>" />
+				<label class="screen-reader-text" for="<?php echo esc_attr( $dom ); ?>-name"><?php esc_html_e( 'Name', 'cluvo' ); ?></label>
+				<input type="text" class="regular-text" id="<?php echo esc_attr( $dom ); ?>-name" name="<?php echo esc_attr( $base ); ?>[name]" value="<?php echo esc_attr( $name ); ?>" placeholder="<?php esc_attr_e( 'Turnverein Musterdorf', 'cluvo' ); ?>" />
 			</td>
 			<td>
-				<input type="password" class="regular-text code cluvo-key-input" name="<?php echo esc_attr( $base ); ?>[api_key]" value="<?php echo esc_attr( $api_key ); ?>" autocomplete="off" />
+				<label class="screen-reader-text" for="<?php echo esc_attr( $dom ); ?>-key"><?php esc_html_e( 'API-Key', 'cluvo' ); ?></label>
+				<input type="password" class="regular-text code cluvo-key-input" id="<?php echo esc_attr( $dom ); ?>-key" name="<?php echo esc_attr( $base ); ?>[api_key]" value="" placeholder="<?php echo esc_attr( $placeholder ); ?>" autocomplete="new-password" spellcheck="false" data-has-key="<?php echo $has_key ? '1' : '0'; ?>" />
 			</td>
 			<td>
-				<button type="button" class="button button-small cluvo-test-account"><?php esc_html_e( 'Testen', 'cluvo' ); ?></button>
-				<button type="button" class="button button-small cluvo-remove-account" aria-label="<?php esc_attr_e( 'Entfernen', 'cluvo' ); ?>">×</button>
-				<span class="cluvo-test-result" style="display:block;font-size:11px;margin-top:4px;"></span>
+				<button type="button" class="button button-small cluvo-test-account" data-account="<?php echo esc_attr( $id ); ?>"><?php esc_html_e( 'Testen', 'cluvo' ); ?></button>
+				<button type="button" class="button button-small button-link-delete cluvo-remove-account"><?php esc_html_e( 'Entfernen', 'cluvo' ); ?></button>
+				<div class="cluvo-test-result" role="status" aria-live="polite"></div>
 			</td>
 		</tr>
 		<?php
@@ -242,25 +302,60 @@ class Cluvo_Settings {
 		check_ajax_referer( 'cluvo_test' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Keine Berechtigung.', 'cluvo' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Keine Berechtigung.', 'cluvo' ) ), 403 );
 		}
 
-		$base_url = isset( $_POST['base_url'] ) ? esc_url_raw( wp_unslash( $_POST['base_url'] ) ) : '';
-		$api_key  = isset( $_POST['api_key'] ) ? sanitize_text_field( wp_unslash( $_POST['api_key'] ) ) : '';
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$api_key    = isset( $_POST['api_key'] ) ? preg_replace( '/\s+/', '', sanitize_text_field( wp_unslash( $_POST['api_key'] ) ) ) : '';
+		$account_id = isset( $_POST['account_id'] ) ? absint( $_POST['account_id'] ) : 0;
 
-		$result = $this->client->ping( $base_url, $api_key );
-
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		if ( '' === $api_key && $account_id ) {
+			$account = $this->client->get_account( $account_id );
+			$api_key = $account ? $account['api_key'] : '';
 		}
 
-		if ( $result['status'] >= 400 ) {
-			wp_send_json_error( array( 'message' => sprintf( __( 'Fehler (Status %d) – Key prüfen.', 'cluvo' ), $result['status'] ) ) );
+		if ( '' === $api_key ) {
+			wp_send_json_error( array( 'message' => __( 'Bitte zuerst einen API-Key eintragen.', 'cluvo' ) ) );
 		}
 
-		$count = isset( $result['body']['data'] ) ? count( $result['body']['data'] ) : 0;
+		$result = $this->client->ping( $api_key );
+		$error  = Cluvo_Client::response_error( $result );
+
+		if ( $error ) {
+			wp_send_json_error( array( 'message' => $error->get_error_message() ) );
+		}
+
+		$forms = array();
+		foreach ( isset( $result['body']['data'] ) && is_array( $result['body']['data'] ) ? $result['body']['data'] : array() as $form ) {
+			if ( isset( $form['slug'] ) ) {
+				$forms[] = array(
+					'name' => isset( $form['name'] ) ? (string) $form['name'] : '',
+					'slug' => (string) $form['slug'],
+				);
+			}
+		}
+
 		wp_send_json_success(
-			array( 'message' => sprintf( __( 'OK – %d Formular(e).', 'cluvo' ), $count ) )
+			array(
+				'message' => sprintf(
+					/* translators: %d: number of active forms */
+					_n( 'Verbunden – %d aktives Formular.', 'Verbunden – %d aktive Formulare.', count( $forms ), 'cluvo' ),
+					count( $forms )
+				),
+				'forms'   => $forms,
+			)
 		);
+	}
+
+	public function handle_flush_cache() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Keine Berechtigung.', 'cluvo' ), 403 );
+		}
+		check_admin_referer( 'cluvo_flush_cache' );
+
+		Cluvo_Client::flush_cache();
+
+		wp_safe_redirect( add_query_arg( 'cluvo_flushed', '1', admin_url( 'options-general.php?page=' . self::PAGE ) ) );
+		exit;
 	}
 }

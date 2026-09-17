@@ -37,7 +37,12 @@ class Cluvo_Updater {
 
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'inject_update' ) );
 		add_filter( 'plugins_api', array( $this, 'plugin_information' ), 20, 3 );
+		add_filter( 'upgrader_source_selection', array( $this, 'keep_folder_name' ), 10, 4 );
 		add_action( 'upgrader_process_complete', array( $this, 'flush_on_update' ), 10, 2 );
+	}
+
+	private function repo() {
+		return apply_filters( 'cluvo_update_github_repo', self::GITHUB_REPO );
 	}
 
 	/**
@@ -51,8 +56,7 @@ class Cluvo_Updater {
 			return is_array( $cached ) ? $cached : array();
 		}
 
-		$repo = apply_filters( 'cluvo_update_github_repo', self::GITHUB_REPO );
-		$url  = "https://api.github.com/repos/{$repo}/releases/latest";
+		$url = 'https://api.github.com/repos/' . $this->repo() . '/releases/latest';
 
 		$response = wp_remote_get(
 			$url,
@@ -78,7 +82,7 @@ class Cluvo_Updater {
 		}
 
 		$release = array(
-			'version'      => ltrim( $body['tag_name'], 'vV' ),
+			'version'      => ltrim( (string) $body['tag_name'], 'vV' ),
 			'download_url' => $this->find_zip_asset( $body ),
 			'changelog'    => isset( $body['body'] ) ? self::markdown_to_html( $body['body'] ) : '',
 			'published'    => isset( $body['published_at'] ) ? gmdate( 'Y-m-d', strtotime( $body['published_at'] ) ) : '',
@@ -96,8 +100,11 @@ class Cluvo_Updater {
 		if ( empty( $body['assets'] ) || ! is_array( $body['assets'] ) ) {
 			return '';
 		}
+		// Only accept assets of this repository's releases.
+		$prefix = 'https://github.com/' . $this->repo() . '/releases/download/';
 		foreach ( $body['assets'] as $asset ) {
-			if ( isset( $asset['name'], $asset['browser_download_url'] ) && preg_match( '/\.zip$/i', $asset['name'] ) ) {
+			if ( isset( $asset['name'], $asset['browser_download_url'] ) && preg_match( '/\.zip$/i', $asset['name'] )
+				&& 0 === stripos( $asset['browser_download_url'], $prefix ) ) {
 				return $asset['browser_download_url'];
 			}
 		}
@@ -122,7 +129,7 @@ class Cluvo_Updater {
 				'slug'        => $this->slug,
 				'plugin'      => $this->basename,
 				'new_version' => $release['version'],
-				'url'         => 'https://github.com/' . self::GITHUB_REPO,
+				'url'         => 'https://github.com/' . $this->repo(),
 				'package'     => $release['download_url'],
 			);
 		} else {
@@ -130,7 +137,7 @@ class Cluvo_Updater {
 				'slug'        => $this->slug,
 				'plugin'      => $this->basename,
 				'new_version' => CLUVO_VERSION,
-				'url'         => 'https://github.com/' . self::GITHUB_REPO,
+				'url'         => 'https://github.com/' . $this->repo(),
 				'package'     => '',
 			);
 		}
@@ -159,13 +166,35 @@ class Cluvo_Updater {
 			'slug'          => $this->slug,
 			'version'       => $release['version'],
 			'author'        => '<a href="https://cluvo.ch">Cluvo</a>',
-			'homepage'      => 'https://github.com/' . self::GITHUB_REPO,
+			'homepage'      => 'https://github.com/' . $this->repo(),
+			'requires'      => '6.0',
+			'requires_php'  => '8.0',
 			'last_updated'  => $release['published'],
 			'download_link' => $release['download_url'],
 			'sections'      => array(
 				'changelog' => $release['changelog'],
 			),
 		);
+	}
+
+	/**
+	 * The release zip contains cluvo/. If the plugin lives in another folder
+	 * (e.g. a git checkout named cluvo-wp), rename the unpacked source so the
+	 * update replaces it instead of installing a second copy.
+	 */
+	public function keep_folder_name( $source, $remote_source, $upgrader, $hook_extra = array() ) {
+		global $wp_filesystem;
+
+		if ( empty( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== $this->basename || ! $wp_filesystem ) {
+			return $source;
+		}
+
+		$target = trailingslashit( $remote_source ) . $this->slug . '/';
+		if ( untrailingslashit( $source ) === untrailingslashit( $target ) ) {
+			return $source;
+		}
+
+		return $wp_filesystem->move( $source, $target, true ) ? $target : $source;
 	}
 
 	/**

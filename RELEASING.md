@@ -19,7 +19,9 @@ Versionen samt Changelog im Dashboard an (inkl. „Aktualisieren"-Button).
 
    (Das Build-Skript bricht ab, wenn die beiden nicht übereinstimmen.)
 
-3. **Changelog ergänzen** in `readme.txt` unter `== Changelog ==`:
+3. **Changelog ergänzen** in `readme.txt` unter `== Changelog ==` (gesammelte
+   Einträge unter `= Unreleased =` in `= X.Y.Z =` umbenennen – das Build-Skript
+   sucht die Versionsnummer):
    ```
    = 0.2.0 =
    * Mehrere Vereine pro Seite (Multi-Account).
@@ -41,6 +43,26 @@ Versionen samt Changelog im Dashboard an (inkl. „Aktualisieren"-Button).
    - hängt das ZIP als Asset an und setzt die Changelog-Notes als Beschreibung.
 
    Lokal bauen (zum Testen) geht weiterhin mit `php bin/build.php` → `dist/`.
+
+## Übersetzungen
+
+Quellsprache ist Deutsch; `languages/` enthält `cluvo.pot` sowie Französisch und
+Italienisch (`fr_FR`, `it_IT` – gelten auch für `fr_CH`/`it_CH`). Nach Textänderungen
+(benötigt gettext, z.B. `brew install gettext`):
+
+```
+xgettext --language=PHP --from-code=UTF-8 --add-comments=translators: --sort-by-file \
+  --keyword=__ --keyword=_e --keyword=esc_html__ --keyword=esc_html_e \
+  --keyword=esc_attr__ --keyword=esc_attr_e --keyword=_n:1,2 --keyword=_x:1,2c \
+  --package-name=Cluvo -o languages/cluvo.pot cluvo.php includes/*.php
+msgmerge --update --backup=none languages/cluvo-fr_FR.po languages/cluvo.pot
+msgmerge --update --backup=none languages/cluvo-it_IT.po languages/cluvo.pot
+# neue/fuzzy Einträge übersetzen, dann:
+msgfmt --check -o languages/cluvo-fr_FR.mo languages/cluvo-fr_FR.po
+msgfmt --check -o languages/cluvo-it_IT.mo languages/cluvo-it_IT.po
+```
+
+Die `.mo`-Dateien werden mit eingecheckt – das Build-Skript packt `languages/` ins ZIP.
 
 ## Was die Nutzer sehen
 

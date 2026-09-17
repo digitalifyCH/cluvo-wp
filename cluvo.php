@@ -3,7 +3,7 @@
  * Plugin Name:       Cluvo
  * Plugin URI:        https://cluvo.ch
  * Description:        Bindet Cluvo-Formulare, Veranstaltungen und News über die Cluvo REST-API in WordPress ein.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            Cluvo
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // No direct access.
 }
 
-define( 'CLUVO_VERSION', '0.1.0' );
+define( 'CLUVO_VERSION', '0.2.0' );
 define( 'CLUVO_PLUGIN_FILE', __FILE__ );
 define( 'CLUVO_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CLUVO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

@@ -3,9 +3,15 @@
  * Thin HTTP client for the Cluvo REST API.
  *
  * Supports multiple Cluvo accounts (one per Verein) on a single site. Each
- * account has a stable numeric id and its own API key; the shared base URL is
- * the same for all. All GET requests are cached per account. API keys never
- * leave the server.
+ * account has a stable numeric id and its own API key. All requests go to the
+ * Cluvo API (app.cluvo.ch) – for local development the base URL can be
+ * overridden in wp-config.php:
+ *
+ *   define( 'CLUVO_API_BASE_URL', 'https://app.cluvo.ddev.site/api/v1' );
+ *
+ * GET requests are cached per account, key, locale and query. When Cluvo is
+ * unreachable, the last good response is served for up to a day. API keys
+ * never leave the server.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,17 +22,37 @@ class Cluvo_Client {
 
 	const OPTION_KEY = 'cluvo_settings';
 
+	const GENERATION_OPTION = 'cluvo_cache_generation';
+
+	const DEFAULT_BASE_URL = 'https://app.cluvo.ch/api/v1';
+
+	/** Transient prefix of cached responses (flush_cache() deletes by it). */
+	const CACHE_PREFIX = 'cluvo_c';
+
+	/** Failed requests are remembered this long, so an outage doesn't slow every page view. */
+	const ERROR_TTL = 60;
+
+	/** Last good response, served while Cluvo is unreachable. */
+	const STALE_TTL = 86400;
+
 	/**
-	 * @return array{base_url:string, cache_ttl:int, accounts:array, next_id:int}
+	 * API base URL – identical for every Verein, so it is no longer a setting.
+	 */
+	public static function base_url() {
+		return defined( 'CLUVO_API_BASE_URL' ) ? CLUVO_API_BASE_URL : self::DEFAULT_BASE_URL;
+	}
+
+	/**
+	 * @return array{cache_ttl:int, accounts:array, next_id:int}
 	 */
 	public function get_settings() {
 		$defaults = array(
-			'base_url'  => '',
 			'cache_ttl' => 600,
 			'accounts'  => array(),
 			'next_id'   => 1,
 		);
-		return wp_parse_args( get_option( self::OPTION_KEY, array() ), $defaults );
+		$settings = get_option( self::OPTION_KEY, array() );
+		return wp_parse_args( is_array( $settings ) ? $settings : array(), $defaults );
 	}
 
 	/**
@@ -34,7 +60,7 @@ class Cluvo_Client {
 	 */
 	public function get_accounts() {
 		$settings = $this->get_settings();
-		return is_array( $settings['accounts'] ) ? $settings['accounts'] : array();
+		return is_array( $settings['accounts'] ) ? array_values( $settings['accounts'] ) : array();
 	}
 
 	/**
@@ -68,6 +94,7 @@ class Cluvo_Client {
 		if ( $requested_id ) {
 			$account = $this->get_account( $requested_id );
 			if ( ! $account ) {
+				/* translators: %s: account id from the shortcode */
 				return new WP_Error( 'cluvo_unknown_account', sprintf( __( 'Unbekannter Verein (account="%s").', 'cluvo' ), $requested_id ) );
 			}
 			return $account;
@@ -81,8 +108,7 @@ class Cluvo_Client {
 	}
 
 	public function is_configured() {
-		$settings = $this->get_settings();
-		return ! empty( $settings['base_url'] ) && ! empty( $settings['accounts'] );
+		return ! empty( $this->get_accounts() );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -110,101 +136,209 @@ class Cluvo_Client {
 	}
 
 	/**
-	 * Submit a form. Not cached. Returns array{status,body} or WP_Error.
-	 */
-	public function submit_form( $slug, $data, $account_id ) {
-		$key = $this->key_for( $account_id );
-		if ( is_wp_error( $key ) ) {
-			return $key;
-		}
-		return $this->request( 'POST', 'forms/' . rawurlencode( $slug ) . '/submit', $key, array( 'body' => $data ) );
-	}
-
-	/**
-	 * Verify a key/base-url pair (used by the settings "test" buttons, also for
-	 * not-yet-saved values).
+	 * Submit a form. Not cached.
 	 *
 	 * @return array{status:int,body:array}|WP_Error
 	 */
-	public function ping( $base_url, $api_key ) {
-		return $this->request( 'GET', 'forms', $api_key, array( 'base_url' => $base_url ) );
+	public function submit_form( $slug, $data, $account_id ) {
+		$account = $this->get_account( $account_id );
+		if ( ! $account || empty( $account['api_key'] ) ) {
+			return new WP_Error( 'cluvo_unknown_account', __( 'Unbekannter oder unvollständiger Verein.', 'cluvo' ) );
+		}
+		return $this->request( 'POST', 'forms/' . rawurlencode( $slug ) . '/submit', $account['api_key'], array( 'body' => $data ) );
+	}
+
+	/**
+	 * Verify an API key (used by the settings "test" button, also for
+	 * not-yet-saved keys).
+	 *
+	 * @return array{status:int,body:array}|WP_Error
+	 */
+	public function ping( $api_key ) {
+		return $this->request( 'GET', 'forms', $api_key );
+	}
+
+	/**
+	 * Turn a failed response into a WP_Error with an understandable message.
+	 * Returns null for 2xx responses. The HTTP status is in the error data
+	 * (0 when Cluvo could not be reached at all).
+	 *
+	 * @param array{status:int,body:array}|WP_Error $response
+	 * @return WP_Error|null
+	 */
+	public static function response_error( $response ) {
+		if ( is_wp_error( $response ) ) {
+			if ( 'cluvo_not_configured' === $response->get_error_code() ) {
+				return $response;
+			}
+			return new WP_Error(
+				'cluvo_unreachable',
+				/* translators: %s: technical error message */
+				sprintf( __( 'Cluvo ist nicht erreichbar (%s).', 'cluvo' ), $response->get_error_message() ),
+				array( 'status' => 0 )
+			);
+		}
+
+		$status = (int) $response['status'];
+		if ( $status >= 200 && $status < 300 ) {
+			return null;
+		}
+
+		$api_message = isset( $response['body']['message'] ) && is_string( $response['body']['message'] ) ? $response['body']['message'] : '';
+
+		if ( 401 === $status ) {
+			$message = __( 'Der API-Key ist ungültig oder wurde in Cluvo widerrufen.', 'cluvo' );
+		} elseif ( 403 === $status ) {
+			$message = '' !== $api_message ? $api_message : __( 'Kein Zugriff auf die Cluvo-API.', 'cluvo' );
+		} elseif ( 404 === $status ) {
+			$message = __( 'Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in Cluvo aktiv und öffentlich?', 'cluvo' );
+		} elseif ( 429 === $status ) {
+			$message = __( 'Zu viele Anfragen an Cluvo. Bitte versuche es gleich nochmals.', 'cluvo' );
+		} elseif ( $status >= 500 ) {
+			/* translators: %d: HTTP status code */
+			$message = sprintf( __( 'Cluvo meldet einen Serverfehler (Status %d).', 'cluvo' ), $status );
+		} else {
+			/* translators: %d: HTTP status code */
+			$message = sprintf( __( 'Cluvo-API antwortete mit Status %d.', 'cluvo' ), $status );
+		}
+
+		return new WP_Error( 'cluvo_api_error', $message, array( 'status' => $status ) );
+	}
+
+	/**
+	 * HTTP status stored in a WP_Error from response_error() (0 if unknown).
+	 */
+	public static function error_status( WP_Error $error ) {
+		$data = $error->get_error_data();
+		return is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 0;
+	}
+
+	/**
+	 * Clear all cached Cluvo responses (called when settings change). Bumping
+	 * the generation also invalidates entries held in a persistent object cache.
+	 */
+	public static function flush_cache() {
+		global $wpdb;
+
+		update_option( self::GENERATION_OPTION, (int) get_option( self::GENERATION_OPTION, 0 ) + 1 );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+				$wpdb->esc_like( '_transient_' . self::CACHE_PREFIX ) . '%',
+				$wpdb->esc_like( '_transient_timeout_' . self::CACHE_PREFIX ) . '%'
+			)
+		);
 	}
 
 	/* ---------------------------------------------------------------------
 	 * Internals
 	 * ------------------------------------------------------------------- */
 
-	private function key_for( $account_id ) {
-		$account = $this->get_account( $account_id );
-		if ( ! $account || empty( $account['api_key'] ) ) {
-			return new WP_Error( 'cluvo_unknown_account', __( 'Unbekannter oder unvollständiger Verein.', 'cluvo' ) );
-		}
-		return $account['api_key'];
-	}
-
 	/**
 	 * Cached GET. Returns the decoded body or WP_Error.
 	 */
 	private function get( $path, $params, $account_id ) {
-		$key = $this->key_for( $account_id );
-		if ( is_wp_error( $key ) ) {
-			return $key;
-		}
-
-		$settings  = $this->get_settings();
-		$cache_key = 'cluvo_' . md5( $account_id . '|' . $path . '|' . wp_json_encode( $params ) );
-
-		$cached = get_transient( $cache_key );
-		if ( false !== $cached ) {
-			return $cached;
+		$account = $this->get_account( $account_id );
+		if ( ! $account || empty( $account['api_key'] ) ) {
+			return new WP_Error( 'cluvo_unknown_account', __( 'Unbekannter oder unvollständiger Verein.', 'cluvo' ) );
 		}
 
 		if ( ! empty( $params ) ) {
+			ksort( $params );
 			$path .= '?' . http_build_query( $params );
 		}
 
-		$response = $this->request( 'GET', $path, $key );
+		$cache_key = $this->cache_key( $account, $path );
+		$cached    = get_transient( $cache_key );
 
-		if ( is_wp_error( $response ) ) {
-			return $response;
+		if ( is_array( $cached ) && array_key_exists( 'body', $cached ) ) {
+			return $cached['body'];
+		}
+		if ( is_array( $cached ) && isset( $cached['error'] ) ) {
+			return new WP_Error( 'cluvo_api_error', $cached['error'], array( 'status' => $cached['status'] ) );
 		}
 
-		if ( $response['status'] >= 400 ) {
-			return new WP_Error(
-				'cluvo_api_error',
-				sprintf( __( 'Cluvo-API antwortete mit Status %d.', 'cluvo' ), $response['status'] ),
-				$response['body']
-			);
+		$response = $this->request( 'GET', $path, $account['api_key'] );
+		$error    = self::response_error( $response );
+
+		if ( ! $error ) {
+			$ttl = max( 30, (int) $this->get_settings()['cache_ttl'] );
+			set_transient( $cache_key, array( 'body' => $response['body'] ), $ttl );
+			set_transient( $cache_key . '_s', array( 'body' => $response['body'] ), max( self::STALE_TTL, $ttl ) );
+			return $response['body'];
 		}
 
-		$ttl = max( 30, (int) $settings['cache_ttl'] );
-		set_transient( $cache_key, $response['body'], $ttl );
+		$status = self::error_status( $error );
 
-		return $response['body'];
+		if ( 0 === $status || 429 === $status || $status >= 500 ) {
+			$stale = get_transient( $cache_key . '_s' );
+			if ( is_array( $stale ) && array_key_exists( 'body', $stale ) ) {
+				set_transient( $cache_key, $stale, self::ERROR_TTL );
+				return $stale['body'];
+			}
+		} else {
+			// Deactivated form, revoked key …: never resurrect the old copy.
+			delete_transient( $cache_key . '_s' );
+		}
+
+		set_transient(
+			$cache_key,
+			array(
+				'error'  => $error->get_error_message(),
+				'status' => $status,
+			),
+			self::ERROR_TTL
+		);
+
+		return $error;
+	}
+
+	private function cache_key( $account, $path ) {
+		$generation = (int) get_option( self::GENERATION_OPTION, 0 );
+		$hash       = md5(
+			wp_json_encode(
+				array(
+					(int) $account['id'],
+					md5( $account['api_key'] ),
+					self::base_url(),
+					self::locale(),
+					$path,
+				)
+			)
+		);
+
+		return self::CACHE_PREFIX . $generation . '_' . $hash;
+	}
+
+	private static function locale() {
+		return function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
 	}
 
 	/**
 	 * Low-level request with an explicit API key.
 	 *
-	 * @param array $args Optional: body, base_url (override).
+	 * @param array $args Optional: body.
 	 * @return array{status:int,body:array}|WP_Error
 	 */
 	private function request( $method, $path, $api_key, $args = array() ) {
-		$settings = $this->get_settings();
-		$base_url = isset( $args['base_url'] ) ? $args['base_url'] : $settings['base_url'];
-
-		if ( empty( $base_url ) || empty( $api_key ) ) {
+		if ( empty( $api_key ) ) {
 			return new WP_Error( 'cluvo_not_configured', __( 'Cluvo ist noch nicht konfiguriert.', 'cluvo' ) );
 		}
 
-		$url = trailingslashit( $base_url ) . ltrim( $path, '/' );
+		$url = trailingslashit( self::base_url() ) . ltrim( $path, '/' );
 
 		$request_args = array(
-			'method'  => $method,
-			'timeout' => 15,
-			'headers' => array(
-				'Authorization' => 'Bearer ' . $api_key,
-				'Accept'        => 'application/json',
+			'method'      => $method,
+			'timeout'     => 'GET' === $method ? 8 : 15,
+			// Never follow redirects: the bearer token would be sent along.
+			'redirection' => 0,
+			'user-agent'  => 'Cluvo-WordPress/' . CLUVO_VERSION . '; ' . home_url( '/' ),
+			'headers'     => array(
+				'Authorization'   => 'Bearer ' . $api_key,
+				'Accept'          => 'application/json',
+				'Accept-Language' => str_replace( '_', '-', self::locale() ),
 			),
 		);
 
@@ -212,26 +346,23 @@ class Cluvo_Client {
 			$request_args['body'] = $args['body'];
 		}
 
+		/**
+		 * Filters the HTTP arguments for requests to the Cluvo API, e.g. to
+		 * disable SSL verification against a local development instance.
+		 */
+		$request_args = apply_filters( 'cluvo_http_request_args', $request_args, $method, $path );
+
 		$response = wp_remote_request( $url, $request_args );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 
-		$status = (int) wp_remote_retrieve_response_code( $response );
-		$body   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		return array(
-			'status' => $status,
+			'status' => (int) wp_remote_retrieve_response_code( $response ),
 			'body'   => is_array( $body ) ? $body : array(),
 		);
-	}
-
-	/**
-	 * Clear all cached Cluvo responses (called when settings change).
-	 */
-	public static function flush_cache() {
-		global $wpdb;
-		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_cluvo_%' OR option_name LIKE '_transient_timeout_cluvo_%'" );
 	}
 }

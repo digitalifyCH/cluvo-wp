@@ -1,0 +1,52 @@
+.cluvo-admin .cluvo-accounts,
+.cluvo-admin .cluvo-shortcodes {
+	max-width: 960px;
+	margin-top: 10px;
+}
+
+.cluvo-admin .cluvo-accounts__id {
+	width: 50px;
+}
+
+.cluvo-admin .cluvo-accounts__name {
+	width: 30%;
+}
+
+.cluvo-admin .cluvo-accounts__actions {
+	width: 30%;
+}
+
+.cluvo-admin .cluvo-accounts .regular-text {
+	width: 100%;
+}
+
+.cluvo-admin .cluvo-muted {
+	color: #646970;
+	font-weight: 400;
+}
+
+.cluvo-admin .cluvo-test-result {
+	margin-top: 6px;
+	font-size: 12px;
+}
+
+.cluvo-admin .cluvo-test-result p,
+.cluvo-admin .cluvo-test-result ul {
+	margin: 4px 0;
+}
+
+.cluvo-admin .cluvo-test-result code {
+	user-select: all;
+}
+
+.cluvo-admin .cluvo-test-result.is-success > p:first-child {
+	color: #00732a;
+}
+
+.cluvo-admin .cluvo-test-result.is-error > p:first-child {
+	color: #b32d2e;
+}
+
+.cluvo-admin .cluvo-shortcodes code {
+	white-space: nowrap;
+}
