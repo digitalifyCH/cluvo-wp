@@ -45,7 +45,7 @@ jobs:
           sudo apt-get install -y -qq gettext > /dev/null
           for po in languages/*.po; do msgfmt --check -o /dev/null "$po"; done
 
-      - name: Bauen (ZIP, info.json, Icons)
+      - name: Bauen (ZIP, info.json, Icons, Download-Seite)
         id: build
         run: php bin/build.php
 
@@ -82,7 +82,7 @@ jobs:
           SSH="ssh -i ~/.ssh/deploy_key"
           # Erst ZIP und Icons, info.json zuletzt und atomar – sonst sähe eine Seite kurz eine
           # Version, deren ZIP noch fehlt.
-          rsync -az -e "$SSH" dist/cluvo-$VERSION.zip dist/icon-*.png "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+          rsync -az -e "$SSH" dist/cluvo-$VERSION.zip dist/icon-*.png dist/index.html "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
           rsync -az -e "$SSH" dist/info.json "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/info.json.neu"
           $SSH "$DEPLOY_USER@$DEPLOY_HOST" "cd $DEPLOY_PATH && cp -f cluvo-$VERSION.zip cluvo-latest.zip.neu && mv -f cluvo-latest.zip.neu cluvo-latest.zip && mv -f info.json.neu info.json"
 

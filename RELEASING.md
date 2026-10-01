@@ -42,6 +42,7 @@ Lokal bauen: `php bin/build.php` → `dist/`.
 | `cluvo/cluvo-X.Y.Z.zip` | jede veröffentlichte Version (bleibt liegen, wird nie überschrieben) |
 | `cluvo/cluvo-latest.zip` | immer die neueste – Download-Link in Cluvo (Einstellungen → Integration) |
 | `cluvo/icon-128x128.png`, `icon-256x256.png` | Icon in den Update-Übersichten (Quelle: `release-assets/`) |
+| `cluvo/index.html` | Download-Seite für Menschen (`wp.cluvo.ch` leitet dorthin), erzeugt aus `info.json` – ändert sich mit jeder Version |
 
 ## Was die Nutzer sehen
 

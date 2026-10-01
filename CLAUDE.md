@@ -66,7 +66,8 @@ zeigt den Stand unter Einstellungen → Cluvo («Jetzt nach Updates suchen», au
 
 **Release:** Version in `cluvo.php` (Header **und** `CLUVO_VERSION`) und `readme.txt` (`Stable tag`) erhöhen, Changelog
 `= X.Y.Z =` in `readme.txt`, auf `main` pushen. Die Action [release.yml](.github/workflows/release.yml) baut mit
-[bin/build.php](bin/build.php) (ZIP mit Ordner `cluvo/`, `info.json`, Icons aus `release-assets/`) und veröffentlicht nur,
+[bin/build.php](bin/build.php) (ZIP mit Ordner `cluvo/`, `info.json`, Icons aus `release-assets/`, Download-Seite
+`index.html` für `wp.cluvo.ch/cluvo/`) und veröffentlicht nur,
 wenn die Version neuer ist als die auf wp.cluvo.ch – plus GitHub-Release. Details: [RELEASING.md](RELEASING.md).
 
 **Fallen:**

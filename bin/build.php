@@ -6,6 +6,7 @@
  *   - cluvo-<version>.zip   the installable plugin (top-level folder: cluvo/)
  *   - info.json             what the in-plugin updater reads from wp.cluvo.ch
  *   - icon-*.png            icons for the WordPress update screens
+ *   - index.html            download page for people (wp.cluvo.ch/cluvo/)
  *   - release-notes.md      the current version's changelog (GitHub Release body)
  *
  * The GitHub Action uploads the first three to wp.cluvo.ch/cluvo/ and creates a
@@ -105,6 +106,7 @@ $info = array(
 	'version'      => $version,
 	'download_url' => "{$base}/{$zip_name}",
 	'sha256'       => hash_file( 'sha256', $zip_path ),
+	'size'         => filesize( $zip_path ),
 	'homepage'     => 'https://www.cluvo.ch',
 	'requires'     => header_value( $readme, 'Requires at least' ),
 	'tested'       => header_value( $readme, 'Tested up to' ),
@@ -121,6 +123,11 @@ $info = array(
 file_put_contents( "{$dist}/info.json", json_encode( $info, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n" );
 echo "  → {$dist}/info.json\n";
 
+/* ---- Download page (wp.cluvo.ch/cluvo/) -------------------------------- */
+
+file_put_contents( "{$dist}/index.html", landing_page( $info ) );
+echo "  → {$dist}/index.html\n";
+
 /* ---- Release notes (current version's changelog) --------------------- */
 
 file_put_contents( "{$dist}/release-notes.md", implode( "\n", array_map( fn ( $line ) => "- {$line}", $changelog ) ) . "\n" );
@@ -134,6 +141,100 @@ if ( getenv( 'GITHUB_OUTPUT' ) ) {
 echo "Done.\n";
 
 /* --------------------------------------------------------------------- */
+
+/**
+ * The page people see on wp.cluvo.ch: version, download, installation, changelog. Plain HTML
+ * with inline styles – no fonts, scripts or requests to other servers.
+ */
+function landing_page( array $info ) {
+	$e        = fn ( $text ) => htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
+	$version  = $e( $info['version'] );
+	$download = $e( $info['download_url'] );
+	$icon     = isset( $info['icons']['2x'] ) ? '<img src="' . $e( $info['icons']['2x'] ) . '" alt="" width="56" height="56">' : '';
+	$date     = $e( gmdate( 'd.m.Y', strtotime( $info['last_updated'] . ' UTC' ) ) );
+	$size     = $e( number_format( (float) ( $info['size'] ?? 0 ) / 1024, 0, '.', "'" ) );
+
+	return <<<HTML
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cluvo für WordPress {$version}</title>
+<meta name="description" content="Formulare, Veranstaltungen und News aus Cluvo auf deiner WordPress-Webseite. Version {$version} herunterladen.">
+<link rel="icon" href="icon-128x128.png">
+<style>
+:root { --bg: #f4f5f3; --card: #fff; --text: #0b1512; --muted: #5d6470; --line: #e3e6e1; --accent: #009966; --accent-text: #fff; --code: #eef1ec; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0d1412; --card: #151e1b; --text: #e8efeb; --muted: #9aa7a0; --line: #26322d; --accent: #2fbf8a; --accent-text: #04140e; --code: #1d2925; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 48px 16px 64px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 32px; }
+.card + .card { margin-top: 20px; }
+header { display: flex; gap: 16px; align-items: center; }
+header img { border-radius: 14px; flex: none; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+.lead { margin: 4px 0 0; color: var(--muted); }
+.download { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 28px; }
+.button { display: inline-block; background: var(--accent); color: var(--accent-text); text-decoration: none; font-weight: 600; padding: 12px 22px; border-radius: 999px; }
+.button:hover { filter: brightness(1.08); }
+.meta { color: var(--muted); font-size: 14px; }
+h2 { font-size: 18px; margin: 0 0 12px; }
+h4 { font-size: 15px; margin: 22px 0 6px; }
+h4:first-child { margin-top: 0; }
+ol, ul { padding-left: 22px; margin: 8px 0; }
+li { margin: 4px 0; }
+p { margin: 8px 0; }
+code { background: var(--code); border-radius: 6px; padding: 1px 6px; font-size: 0.92em; }
+a { color: var(--accent); }
+.changelog { max-height: 420px; overflow: auto; padding-right: 8px; }
+footer { margin-top: 28px; text-align: center; color: var(--muted); font-size: 14px; }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <header>
+      {$icon}
+      <div>
+        <h1>Cluvo für WordPress</h1>
+        <p class="lead">Formulare, Veranstaltungen und News aus Cluvo auf deiner WordPress-Webseite.</p>
+      </div>
+    </header>
+    <div class="download">
+      <a class="button" href="{$download}">Version {$version} herunterladen</a>
+      <span class="meta">ZIP, {$size} KB · veröffentlicht am {$date} · WordPress ab {$e( $info['requires'] )}, PHP ab {$e( $info['requires_php'] )}</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Installation</h2>
+    {$info['sections']['installation']}
+    <p>Das Plugin braucht Cluvo Pro – in Cluvo Basic ist die Schnittstelle für WordPress gesperrt.</p>
+  </section>
+
+  <section class="card">
+    <h2>Updates</h2>
+    <p>Ist das Plugin installiert, holt WordPress neue Versionen von selbst hier ab. Sie erscheinen unter Dashboard → Aktualisierungen, auf Wunsch auch automatisch. Unter Einstellungen → Cluvo siehst du die installierte Version und kannst sofort nach Updates suchen.</p>
+  </section>
+
+  <section class="card">
+    <h2>Was ist neu</h2>
+    <div class="changelog">{$info['sections']['changelog']}</div>
+  </section>
+
+  <footer>
+    <a href="https://www.cluvo.ch">Cluvo</a> · Vereinssoftware aus der Schweiz · <a href="https://www.cluvo.ch/hilfe">Hilfe</a> · <a href="https://www.cluvo.ch/impressum">Impressum</a>
+  </footer>
+</main>
+</body>
+</html>
+
+HTML;
+}
 
 function fail( $message ) {
 	fwrite( STDERR, "Error: {$message}\n" );
@@ -222,5 +323,8 @@ function inline_markup( $text ) {
 	$text = preg_replace( '/`([^`]+)`/', '<code>$1</code>', $text );
 	$text = preg_replace( '/\*\*(.+?)\*\*/', '<strong>$1</strong>', $text );
 
-	return preg_replace( '/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/', '<a href="$2">$1</a>', $text );
+	$text = preg_replace( '/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/', '<a href="$2">$1</a>', $text );
+
+	// Nackte Adressen klickbar machen (nicht die eben erzeugten Links)
+	return preg_replace( '/(?<!["\'>])\b(https?:\/\/[^\s<]+[^\s<.,;:!?)])/', '<a href="$1">$1</a>', $text );
 }
