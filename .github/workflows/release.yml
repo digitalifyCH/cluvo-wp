@@ -1,12 +1,27 @@
 name: Release Plugin
 
+# Jeder Push auf main prüft den Code. Ist die Version in cluvo.php neuer als die auf
+# wp.cluvo.ch, wird sie veröffentlicht: ZIP und info.json auf den Update-Server, dazu ein
+# GitHub-Release (für Installationen bis 0.2.0, die ihre Updates noch bei GitHub holen).
+# Ablauf und Versionierung: RELEASING.md
+
 on:
   push:
-    tags: ['v*']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  DEPLOY_HOST: 179.237.96.154
+  DEPLOY_USER: deploy
+  DEPLOY_PATH: /var/www/wp-updates/cluvo
+  INFO_URL: https://wp.cluvo.ch/cluvo/info.json
 
 jobs:
   release:
@@ -20,18 +35,74 @@ jobs:
         with:
           php-version: '8.4'
           extensions: zip, mbstring
+          tools: none
 
-      - name: Build plugin (zip + release notes)
+      - name: PHP-Syntax prüfen
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Übersetzungen prüfen
+        run: |
+          sudo apt-get install -y -qq gettext > /dev/null
+          for po in languages/*.po; do msgfmt --check -o /dev/null "$po"; done
+
+      - name: Bauen (ZIP, info.json, Icons)
+        id: build
         run: php bin/build.php
 
-      - name: Show build output
-        run: ls -la dist/
+      - name: Schon veröffentlicht?
+        id: check
+        env:
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          LIVE=$(curl -fsS --max-time 15 "$INFO_URL" | jq -r '.version // empty' || true)
+          echo "Version im Repo: $VERSION, auf wp.cluvo.ch: ${LIVE:-keine}"
+          if [ "$VERSION" = "$LIVE" ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$VERSION ist bereits veröffentlicht – für ein Update die Version in cluvo.php erhöhen."
+          elif [ -n "$LIVE" ] && [ "$(printf '%s\n%s\n' "$LIVE" "$VERSION" | sort -V | tail -n1)" != "$VERSION" ]; then
+            echo "::error::$VERSION ist älter als die veröffentlichte $LIVE."
+            exit 1
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Create GitHub Release
+      - name: SSH-Schlüssel
+        if: steps.check.outputs.publish == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Auf wp.cluvo.ch veröffentlichen
+        if: steps.check.outputs.publish == 'true'
+        env:
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          SSH="ssh -i ~/.ssh/deploy_key"
+          # Erst ZIP und Icons, info.json zuletzt und atomar – sonst sähe eine Seite kurz eine
+          # Version, deren ZIP noch fehlt.
+          rsync -az -e "$SSH" dist/cluvo-$VERSION.zip dist/icon-*.png "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+          rsync -az -e "$SSH" dist/info.json "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/info.json.neu"
+          $SSH "$DEPLOY_USER@$DEPLOY_HOST" "cd $DEPLOY_PATH && cp -f cluvo-$VERSION.zip cluvo-latest.zip.neu && mv -f cluvo-latest.zip.neu cluvo-latest.zip && mv -f info.json.neu info.json"
+
+      - name: Veröffentlichung prüfen
+        if: steps.check.outputs.publish == 'true'
+        env:
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          test "$(curl -fsS "$INFO_URL" | jq -r .version)" = "$VERSION"
+          curl -fsS -o /tmp/live.zip "https://wp.cluvo.ch/cluvo/cluvo-$VERSION.zip"
+          test "$(sha256sum /tmp/live.zip | cut -d' ' -f1)" = "$(jq -r .sha256 dist/info.json)"
+          echo "Cluvo $VERSION ist auf wp.cluvo.ch."
+
+      - name: GitHub-Release
+        if: steps.check.outputs.publish == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          # The built zip (top-level folder cluvo/) is attached as the asset the
-          # in-plugin updater downloads. Release notes = current changelog.
-          files: dist/cluvo-*.zip
+          tag_name: v${{ steps.build.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: Cluvo ${{ steps.build.outputs.version }}
           body_path: dist/release-notes.md
+          files: dist/cluvo-${{ steps.build.outputs.version }}.zip
           fail_on_unmatched_files: true

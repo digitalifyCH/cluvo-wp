@@ -50,3 +50,27 @@
 .cluvo-admin .cluvo-shortcodes code {
 	white-space: nowrap;
 }
+
+.cluvo-admin .cluvo-badge {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 8px;
+	border-radius: 999px;
+	font-size: 12px;
+	line-height: 1.8;
+	vertical-align: middle;
+}
+
+.cluvo-admin .cluvo-badge--ok {
+	background: #e6f4ea;
+	color: #00732a;
+}
+
+.cluvo-admin .cluvo-badge--update {
+	background: #fcf0d0;
+	color: #8a5a00;
+}
+
+.cluvo-admin .cluvo-updates__error {
+	color: #b32d2e;
+}

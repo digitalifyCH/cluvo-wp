@@ -1,54 +1,88 @@
 # Release-Workflow
 
-Updates werden über **GitHub Releases** ausgeliefert. Jede WordPress-Seite mit
-dem Plugin fragt die GitHub-API nach dem neuesten Release und zeigt neue
-Versionen samt Changelog im Dashboard an (inkl. „Aktualisieren"-Button).
-
-> Voraussetzung: Das Repo `digitalifyCH/cluvo-wp` ist **öffentlich**. Der eingebaute
-> Updater (`includes/class-cluvo-updater.php`) lädt das Release-Asset ohne
-> Token. Liegt das Repo unter einem anderen Namen, in der Konstante
-> `Cluvo_Updater::GITHUB_REPO` anpassen.
+Updates kommen von Cluvos eigenem Update-Server **wp.cluvo.ch** (VPS bei Infomaniak, Caddy liefert
+`/var/www/wp-updates/cluvo/` statisch aus). Jede WordPress-Seite mit dem Plugin fragt dort
+`https://wp.cluvo.ch/cluvo/info.json` und zeigt neue Versionen samt Changelog im Dashboard an –
+inkl. «Jetzt aktualisieren» und automatischer Updates.
 
 ## Eine neue Version veröffentlichen
 
 1. **Code ändern.**
-
-2. **Version bumpen** – an beiden Stellen in `cluvo.php` identisch:
-   - Header-Kommentar `Version: 0.2.0`
-   - `define( 'CLUVO_VERSION', '0.2.0' )`
-
-   (Das Build-Skript bricht ab, wenn die beiden nicht übereinstimmen.)
-
-3. **Changelog ergänzen** in `readme.txt` unter `== Changelog ==` (gesammelte
-   Einträge unter `= Unreleased =` in `= X.Y.Z =` umbenennen – das Build-Skript
-   sucht die Versionsnummer):
+2. **Version erhöhen**, an allen Stellen gleich:
+   - `cluvo.php`: Header `Version: 0.3.1` **und** `define( 'CLUVO_VERSION', '0.3.1' )`
+   - `readme.txt`: `Stable tag: 0.3.1`
+3. **Changelog** in `readme.txt` unter `== Changelog ==` ergänzen:
    ```
-   = 0.2.0 =
-   * Mehrere Vereine pro Seite (Multi-Account).
-   * Bugfix: …
+   = 0.3.1 =
+   * Was sich geändert hat.
    ```
-   Diese Einträge werden automatisch zur Release-Beschreibung und erscheinen im
-   „Version-Details"-Popup in WordPress.
+4. **Auf `main` pushen.** Fertig.
 
-4. **Commit & Tag pushen** – das löst das automatische Release aus:
-   ```
-   git commit -am "Release 0.2.0"
-   git tag v0.2.0
-   git push origin main --tags
-   ```
+Die Action [`release.yml`](.github/workflows/release.yml) läuft bei jedem Push auf `main`:
 
-   Die GitHub Action [`release.yml`](.github/workflows/release.yml):
-   - baut `cluvo-0.2.0.zip` (Top-Level-Ordner `cluvo/`) + `release-notes.md`,
-   - erstellt ein GitHub Release zum Tag `v0.2.0`,
-   - hängt das ZIP als Asset an und setzt die Changelog-Notes als Beschreibung.
+- prüft PHP-Syntax und Übersetzungen,
+- baut mit `bin/build.php` das ZIP (Top-Level-Ordner `cluvo/`), `info.json` und die Icons,
+- vergleicht die Version mit der auf wp.cluvo.ch:
+  - **gleich** → nichts zu tun (Hinweis im Log: Version erhöhen),
+  - **älter** → Fehler,
+  - **neuer** → lädt ZIP und Icons hoch, dann `info.json` (zuletzt und atomar), kopiert das ZIP nach
+    `cluvo-latest.zip`, prüft die Veröffentlichung (Version und SHA-256) und legt ein GitHub-Release
+    `vX.Y.Z` mit dem ZIP an.
 
-   Lokal bauen (zum Testen) geht weiterhin mit `php bin/build.php` → `dist/`.
+Das Build-Skript bricht ab, wenn Header, `CLUVO_VERSION` und `Stable tag` nicht übereinstimmen, wenn der
+Changelog-Eintrag zur Version fehlt oder wenn `Update URI` nicht auf `https://wp.cluvo.ch/cluvo/` zeigt.
+
+Lokal bauen: `php bin/build.php` → `dist/`.
+
+## Was auf wp.cluvo.ch liegt
+
+| Datei | Zweck |
+| --- | --- |
+| `cluvo/info.json` | Version, Download, Anforderungen, Beschreibung, Installation, Changelog, Icons |
+| `cluvo/cluvo-X.Y.Z.zip` | jede veröffentlichte Version (bleibt liegen, wird nie überschrieben) |
+| `cluvo/cluvo-latest.zip` | immer die neueste – Download-Link in Cluvo (Einstellungen → Integration) |
+| `cluvo/icon-128x128.png`, `icon-256x256.png` | Icon in den Update-Übersichten (Quelle: `release-assets/`) |
+
+## Was die Nutzer sehen
+
+- WordPress fragt alle 12 Stunden nach Updates; das Plugin merkt sich die Antwort 6 Stunden.
+- Einstellungen → Cluvo zeigt installierte und neueste Version, ob automatische Updates an sind, und hat
+  «Jetzt nach Updates suchen» (dasselbe als Link in der Plugin-Liste).
+- «Details ansehen» zeigt Beschreibung, Installation und Changelog.
+- Installiert wird nur ein Paket, das unter derselben Adresse wie `info.json` liegt.
+
+## Einrichtung (einmalig)
+
+- **Secret `SSH_KEY`** in diesem Repo (Settings → Secrets → Actions): derselbe private Schlüssel wie im
+  Cluvo-Repo (`deploy@179.237.96.154`).
+- Auf dem Server: Verzeichnis `/var/www/wp-updates/cluvo` (Besitzer `deploy`) und der Block `wp.cluvo.ch`
+  im Caddyfile – beides bringt `deploy/server/provision.sh` im Cluvo-Repo mit. DNS: `*.cluvo.ch` zeigt
+  bereits auf den Server, «wp» ist als Vereins-Slug gesperrt.
+
+## Umstieg von GitHub Releases (bis 0.2.0)
+
+Version 0.1.0 holt ihre Updates noch über die GitHub-API (`releases/latest`). Deshalb legt die Action
+weiterhin zu jeder Version ein GitHub-Release mit dem ZIP an: Alte Installationen bekommen so die erste
+Version mit dem neuen Updater und fragen danach nur noch wp.cluvo.ch.
+
+## Header «Update URI»
+
+`Update URI: https://wp.cluvo.ch/cluvo/` im Plugin-Header bewirkt zweierlei: WordPress ruft für das Plugin
+den Filter `update_plugins_wp.cluvo.ch` auf (dort antwortet `Cluvo_Updater`), und wordpress.org kann nie ein
+gleichnamiges Plugin als Update anbieten. Den Wert nicht ändern – sonst findet keine Installation mehr Updates.
+
+Zum Testen gegen einen anderen Server in `wp-config.php`:
+
+```php
+define( 'CLUVO_UPDATE_URL', 'https://wp.cluvo.ch/cluvo-test/info.json' );
+```
+
+und mit `CLUVO_UPDATE_BASE=https://wp.cluvo.ch/cluvo-test php bin/build.php` bauen.
 
 ## Übersetzungen
 
-Quellsprache ist Deutsch; `languages/` enthält `cluvo.pot` sowie Französisch und
-Italienisch (`fr_FR`, `it_IT` – gelten auch für `fr_CH`/`it_CH`). Nach Textänderungen
-(benötigt gettext, z.B. `brew install gettext`):
+Quellsprache ist Deutsch; `languages/` enthält `cluvo.pot` sowie Französisch und Italienisch (`fr_FR`, `it_IT`
+– gelten auch für `fr_CH`/`it_CH`). Nach Textänderungen (benötigt gettext, z.B. `brew install gettext`):
 
 ```
 xgettext --language=PHP --from-code=UTF-8 --add-comments=translators: --sort-by-file \
@@ -63,28 +97,3 @@ msgfmt --check -o languages/cluvo-it_IT.mo languages/cluvo-it_IT.po
 ```
 
 Die `.mo`-Dateien werden mit eingecheckt – das Build-Skript packt `languages/` ins ZIP.
-
-## Was die Nutzer sehen
-
-- WordPress prüft das „latest release" ca. alle 12 h (oder sofort bei „Nach
-  Updates suchen"). Ist die Release-Version höher als die installierte,
-  erscheint die Update-Benachrichtigung.
-- „Details ansehen" zeigt die Release-Notes (Changelog).
-- „Jetzt aktualisieren" lädt das ZIP-Asset und installiert es.
-
-## Wichtig
-
-- Das **ZIP-Asset** muss den Top-Level-Ordner `cluvo/` enthalten (macht
-  `build.php` automatisch). Der von GitHub generierte Source-Zipball ist *nicht*
-  installierbar – darum hängen wir ein eigenes Asset an.
-- Versionsnummern nach SemVer (`MAJOR.MINOR.PATCH`); Tag immer mit `v`-Präfix.
-- Test-Override des Repos (z.B. Fork/Staging) via Filter:
-  ```php
-  add_filter( 'cluvo_update_github_repo', fn() => 'meinuser/cluvo-wp-staging' );
-  ```
-
-## Keine Secrets nötig
-
-Die Action nutzt nur das automatische `GITHUB_TOKEN` (über `permissions:
-contents: write`). Es müssen keine SSH-Keys oder eigenen Secrets hinterlegt
-werden.

@@ -2,7 +2,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Cluvo\n"
-"Report-Msgid-Bugs-To: https://github.com/digitalifyCH/cluvo-wp/issues\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-01 13:54+0200\n"
 "PO-Revision-Date: 2026-09-17 00:00+0200\n"
 "Last-Translator: Cluvo\n"
 "Language-Team: Cluvo\n"
@@ -23,8 +24,11 @@ msgid "Unbekannter Verein (account=\"%s\")."
 msgstr "Associazione sconosciuta (account=\"%s\")."
 
 #: includes/class-cluvo-client.php:107
-msgid "Es sind mehrere Vereine hinterlegt – bitte account=\"…\" im Shortcode angeben."
-msgstr "Sono configurate più associazioni – indica account=\"…\" nello shortcode."
+msgid ""
+"Es sind mehrere Vereine hinterlegt – bitte account=\"…\" im Shortcode "
+"angeben."
+msgstr ""
+"Sono configurate più associazioni – indica account=\"…\" nello shortcode."
 
 #: includes/class-cluvo-client.php:146 includes/class-cluvo-client.php:245
 msgid "Unbekannter oder unvollständiger Verein."
@@ -45,8 +49,12 @@ msgid "Kein Zugriff auf die Cluvo-API."
 msgstr "Nessun accesso all’API di Cluvo."
 
 #: includes/class-cluvo-client.php:194
-msgid "Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in Cluvo aktiv und öffentlich?"
-msgstr "Non trovato. Lo slug è corretto e il modulo o l’articolo è attivo e pubblico in Cluvo?"
+msgid ""
+"Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in "
+"Cluvo aktiv und öffentlich?"
+msgstr ""
+"Non trovato. Lo slug è corretto e il modulo o l’articolo è attivo e pubblico "
+"in Cluvo?"
 
 #: includes/class-cluvo-client.php:196
 msgid "Zu viele Anfragen an Cluvo. Bitte versuche es gleich nochmals."
@@ -155,8 +163,13 @@ msgstr "Intervallo"
 #. translators: %s: custom field label
 #: includes/class-cluvo-form-renderer.php:544
 #, php-format
-msgid "Das Wiederholungsfeld «%s» kann das Plugin nicht anzeigen, weil die Cluvo-API keine Unterfelder liefert. Dieser Hinweis ist nur für Administratoren sichtbar."
-msgstr "Il plugin non può mostrare il campo ripetibile «%s» perché l’API di Cluvo non fornisce i sottocampi. Questo avviso è visibile solo agli amministratori."
+msgid ""
+"Das Wiederholungsfeld «%s» kann das Plugin nicht anzeigen, weil die Cluvo-"
+"API keine Unterfelder liefert. Dieser Hinweis ist nur für Administratoren "
+"sichtbar."
+msgstr ""
+"Il plugin non può mostrare il campo ripetibile «%s» perché l’API di Cluvo "
+"non fornisce i sottocampi. Questo avviso è visibile solo agli amministratori."
 
 #: includes/class-cluvo-form-renderer.php:552
 msgid "Eintrag hinzufügen"
@@ -164,7 +177,7 @@ msgstr "Aggiungi voce"
 
 #. translators: %s: row number
 #: includes/class-cluvo-form-renderer.php:561
-#: includes/class-cluvo-plugin.php:84
+#: includes/class-cluvo-plugin.php:87
 #, php-format
 msgid "Eintrag %s"
 msgstr "Voce %s"
@@ -191,27 +204,27 @@ msgstr "al mese"
 msgid "pro Jahr"
 msgstr "all’anno"
 
-#: includes/class-cluvo-plugin.php:77
+#: includes/class-cluvo-plugin.php:80
 msgid "Wird gesendet …"
 msgstr "Invio in corso …"
 
-#: includes/class-cluvo-plugin.php:78
+#: includes/class-cluvo-plugin.php:81
 msgid "Vielen Dank! Deine Anmeldung wurde empfangen."
 msgstr "Grazie mille! La tua iscrizione è stata ricevuta."
 
-#: includes/class-cluvo-plugin.php:79
+#: includes/class-cluvo-plugin.php:82
 msgid "Vielen Dank! Dein Antrag wurde empfangen und wird geprüft."
 msgstr "Grazie mille! La tua richiesta è stata ricevuta e verrà esaminata."
 
-#: includes/class-cluvo-plugin.php:80
+#: includes/class-cluvo-plugin.php:83
 msgid "Bitte prüfe die markierten Angaben."
 msgstr "Controlla i campi evidenziati."
 
-#: includes/class-cluvo-plugin.php:81
+#: includes/class-cluvo-plugin.php:84
 msgid "Es ist ein Fehler aufgetreten. Bitte versuche es erneut."
 msgstr "Si è verificato un errore. Riprova."
 
-#: includes/class-cluvo-plugin.php:82
+#: includes/class-cluvo-plugin.php:85
 msgid "Ansprechperson (freiwillig)"
 msgstr "Persona di contatto (facoltativo)"
 
@@ -220,7 +233,9 @@ msgid "Dieses Formular ist nicht mehr verfügbar."
 msgstr "Questo modulo non è più disponibile."
 
 #: includes/class-cluvo-rest.php:80 includes/class-cluvo-rest.php:105
-msgid "Zu viele Anmeldungen in kurzer Zeit. Bitte versuche es in ein paar Minuten nochmals."
+msgid ""
+"Zu viele Anmeldungen in kurzer Zeit. Bitte versuche es in ein paar Minuten "
+"nochmals."
 msgstr "Troppe iscrizioni in poco tempo. Riprova tra qualche minuto."
 
 #: includes/class-cluvo-rest.php:86
@@ -228,152 +243,264 @@ msgid "Die Angaben sind zu umfangreich."
 msgstr "I dati inviati sono troppo voluminosi."
 
 #: includes/class-cluvo-rest.php:108
-msgid "Das Formular konnte gerade nicht gesendet werden. Bitte versuche es später nochmals."
+msgid ""
+"Das Formular konnte gerade nicht gesendet werden. Bitte versuche es später "
+"nochmals."
 msgstr "Non è stato possibile inviare il modulo. Riprova più tardi."
 
-#: includes/class-cluvo-settings.php:37 includes/class-cluvo-settings.php:38
-#: includes/class-cluvo-settings.php:165
+#: includes/class-cluvo-settings.php:41 includes/class-cluvo-settings.php:42
+#: includes/class-cluvo-settings.php:169
 msgid "Cluvo"
 msgstr "Cluvo"
 
-#: includes/class-cluvo-settings.php:46
+#: includes/class-cluvo-settings.php:50
 msgid "Einstellungen"
 msgstr "Impostazioni"
 
-#: includes/class-cluvo-settings.php:75
+#: includes/class-cluvo-settings.php:79
 msgid "Verbindung wird geprüft …"
 msgstr "Verifica della connessione …"
 
-#: includes/class-cluvo-settings.php:76
+#: includes/class-cluvo-settings.php:80
 msgid "Die Prüfung ist fehlgeschlagen. Bitte versuche es erneut."
 msgstr "La verifica non è riuscita. Riprova."
 
-#: includes/class-cluvo-settings.php:77 includes/class-cluvo-settings.php:318
+#: includes/class-cluvo-settings.php:81 includes/class-cluvo-settings.php:425
 msgid "Bitte zuerst einen API-Key eintragen."
 msgstr "Inserisci prima una chiave API."
 
-#: includes/class-cluvo-settings.php:78
+#: includes/class-cluvo-settings.php:82
 msgid "Speichere die Einstellungen, damit der Verein eine ID bekommt."
 msgstr "Salva le impostazioni affinché l’associazione riceva un ID."
 
 #. translators: %s: name of the Verein
-#: includes/class-cluvo-settings.php:127
+#: includes/class-cluvo-settings.php:131
 #, php-format
 msgid "Für «%s» fehlt der API-Key."
 msgstr "Manca la chiave API per «%s»."
 
-#: includes/class-cluvo-settings.php:169
+#: includes/class-cluvo-settings.php:173
 msgid "Der Cache wurde geleert."
 msgstr "La cache è stata svuotata."
 
-#: includes/class-cluvo-settings.php:172
-msgid "Verbinde diese Webseite mit einem oder mehreren Cluvo-Vereinen. Einen API-Key erstellst du in Cluvo unter Einstellungen → Integration."
-msgstr "Collega questo sito a una o più associazioni Cluvo. Crei una chiave API in Cluvo sotto Impostazioni → Integrazione."
-
 #: includes/class-cluvo-settings.php:177
+msgid ""
+"Verbinde diese Webseite mit einem oder mehreren Cluvo-Vereinen. Einen API-"
+"Key erstellst du in Cluvo unter Einstellungen → Integration."
+msgstr ""
+"Collega questo sito a una o più associazioni Cluvo. Crei una chiave API in "
+"Cluvo sotto Impostazioni → Integrazione."
+
+#: includes/class-cluvo-settings.php:182
 msgid "Vereine"
 msgstr "Associazioni"
 
-#: includes/class-cluvo-settings.php:178
-msgid "Jeder Verein hat einen eigenen API-Key. Die ID nutzt du im Shortcode, z.B. account=\"1\". Gespeicherte Keys werden nicht mehr angezeigt – lässt du das Feld leer, bleibt der Key erhalten."
-msgstr "Ogni associazione ha la propria chiave API. Usa l’ID nello shortcode, ad es. account=\"1\". Le chiavi salvate non vengono più mostrate – se lasci vuoto il campo, la chiave resta invariata."
-
 #: includes/class-cluvo-settings.php:183
+msgid ""
+"Jeder Verein hat einen eigenen API-Key. Die ID nutzt du im Shortcode, z.B. "
+"account=\"1\". Gespeicherte Keys werden nicht mehr angezeigt – lässt du das "
+"Feld leer, bleibt der Key erhalten."
+msgstr ""
+"Ogni associazione ha la propria chiave API. Usa l’ID nello shortcode, ad es. "
+"account=\"1\". Le chiavi salvate non vengono più mostrate – se lasci vuoto "
+"il campo, la chiave resta invariata."
+
+#: includes/class-cluvo-settings.php:188
 msgid "ID"
 msgstr "ID"
 
-#: includes/class-cluvo-settings.php:184 includes/class-cluvo-settings.php:284
+#: includes/class-cluvo-settings.php:189 includes/class-cluvo-settings.php:391
 msgid "Name"
 msgstr "Nome"
 
-#: includes/class-cluvo-settings.php:185 includes/class-cluvo-settings.php:288
+#: includes/class-cluvo-settings.php:190 includes/class-cluvo-settings.php:395
 msgid "API-Key"
 msgstr "Chiave API"
 
-#: includes/class-cluvo-settings.php:186
+#: includes/class-cluvo-settings.php:191
 msgid "Aktionen"
 msgstr "Azioni"
 
-#: includes/class-cluvo-settings.php:202
+#: includes/class-cluvo-settings.php:207
 msgid "+ Verein hinzufügen"
 msgstr "+ Aggiungi associazione"
 
-#: includes/class-cluvo-settings.php:207
+#: includes/class-cluvo-settings.php:212
 msgid "Cache-Dauer (Sekunden)"
 msgstr "Durata della cache (secondi)"
 
-#: includes/class-cluvo-settings.php:210
-msgid "So lange werden Formulare, Veranstaltungen und News zwischengespeichert. Ist Cluvo nicht erreichbar, zeigt das Plugin bis zu einem Tag lang den letzten Stand."
-msgstr "Durata della cache per moduli, eventi e notizie. Se Cluvo non è raggiungibile, il plugin mostra l’ultimo stato noto per al massimo un giorno."
+#: includes/class-cluvo-settings.php:215
+msgid ""
+"So lange werden Formulare, Veranstaltungen und News zwischengespeichert. Ist "
+"Cluvo nicht erreichbar, zeigt das Plugin bis zu einem Tag lang den letzten "
+"Stand."
+msgstr ""
+"Durata della cache per moduli, eventi e notizie. Se Cluvo non è "
+"raggiungibile, il plugin mostra l’ultimo stato noto per al massimo un giorno."
 
-#: includes/class-cluvo-settings.php:222
+#: includes/class-cluvo-settings.php:227
 msgid "Cache leeren"
 msgstr "Svuota cache"
 
-#: includes/class-cluvo-settings.php:223
+#: includes/class-cluvo-settings.php:228
 msgid "Änderungen aus Cluvo sofort anzeigen."
 msgstr "Mostra subito le modifiche fatte in Cluvo."
 
-#: includes/class-cluvo-settings.php:228
+#: includes/class-cluvo-settings.php:235
 msgid "Shortcodes"
 msgstr "Shortcode"
 
-#: includes/class-cluvo-settings.php:229
-msgid "Ist nur ein Verein hinterlegt, kann account=\"…\" weggelassen werden. «Testen» zeigt die Shortcodes der aktiven Formulare eines Vereins."
-msgstr "Se è configurata una sola associazione, account=\"…\" può essere omesso. «Verifica» mostra gli shortcode dei moduli attivi di un’associazione."
+#: includes/class-cluvo-settings.php:236
+msgid ""
+"Ist nur ein Verein hinterlegt, kann account=\"…\" weggelassen werden. "
+"«Testen» zeigt die Shortcodes der aktiven Formulare eines Vereins."
+msgstr ""
+"Se è configurata una sola associazione, account=\"…\" può essere omesso. "
+"«Verifica» mostra gli shortcode dei moduli attivi di un’associazione."
 
-#: includes/class-cluvo-settings.php:234
+#: includes/class-cluvo-settings.php:241
 msgid "Shortcode"
 msgstr "Shortcode"
 
-#: includes/class-cluvo-settings.php:235
+#: includes/class-cluvo-settings.php:242
 msgid "Attribute"
 msgstr "Attributi"
 
-#: includes/class-cluvo-settings.php:241
+#: includes/class-cluvo-settings.php:248
 msgid "<code>slug</code> – Slug des Formulars in Cluvo (Pflicht)"
 msgstr "<code>slug</code> – slug del modulo in Cluvo (obbligatorio)"
 
-#: includes/class-cluvo-settings.php:245
-msgid "<code>limit</code> – Anzahl Termine (Serien einzeln gezählt, Standard 10) · <code>category</code> – ID der Kategorie · <code>from</code>, <code>to</code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate)"
-msgstr "<code>limit</code> – numero di date (serie contate singolarmente, predefinito 10) · <code>category</code> – ID della categoria · <code>from</code>, <code>to</code> – periodo nel formato AAAA-MM-GG (predefinito: da oggi per 12 mesi)"
+#: includes/class-cluvo-settings.php:252
+msgid ""
+"<code>limit</code> – Anzahl Termine (Serien einzeln gezählt, Standard 10) · "
+"<code>category</code> – ID der Kategorie · <code>from</code>, <code>to</"
+"code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate)"
+msgstr ""
+"<code>limit</code> – numero di date (serie contate singolarmente, "
+"predefinito 10) · <code>category</code> – ID della categoria · <code>from</"
+"code>, <code>to</code> – periodo nel formato AAAA-MM-GG (predefinito: da "
+"oggi per 12 mesi)"
 
-#: includes/class-cluvo-settings.php:249
-msgid "<code>limit</code> – Anzahl pro Seite (Standard 6, höchstens 50) · <code>category</code> – ID der Kategorie · <code>pagination=\"1\"</code> – Links zu älteren News"
-msgstr "<code>limit</code> – numero per pagina (predefinito 6, al massimo 50) · <code>category</code> – ID della categoria · <code>pagination=\"1\"</code> – link alle notizie meno recenti"
+#: includes/class-cluvo-settings.php:256
+msgid ""
+"<code>limit</code> – Anzahl pro Seite (Standard 6, höchstens 50) · "
+"<code>category</code> – ID der Kategorie · <code>pagination=\"1\"</code> – "
+"Links zu älteren News"
+msgstr ""
+"<code>limit</code> – numero per pagina (predefinito 6, al massimo 50) · "
+"<code>category</code> – ID della categoria · <code>pagination=\"1\"</code> – "
+"link alle notizie meno recenti"
+
+#: includes/class-cluvo-settings.php:282
+msgid "Updates"
+msgstr "Aggiornamenti"
+
+#: includes/class-cluvo-settings.php:285
+msgid "Installierte Version"
+msgstr "Versione installata"
+
+#: includes/class-cluvo-settings.php:289
+msgid "Neueste Version"
+msgstr "Ultima versione"
+
+#: includes/class-cluvo-settings.php:296
+msgid "Update verfügbar"
+msgstr "Aggiornamento disponibile"
+
+#: includes/class-cluvo-settings.php:298
+msgid "Aktuell"
+msgstr "Aggiornato"
+
+#. translators: %s: date and time of the last check
+#: includes/class-cluvo-settings.php:305
+#, php-format
+msgid "Zuletzt geprüft: %s"
+msgstr "Ultimo controllo: %s"
+
+#. translators: %s: technical error message
+#: includes/class-cluvo-settings.php:314
+#, php-format
+msgid ""
+"Der Update-Server war nicht erreichbar (%s). WordPress versucht es später "
+"erneut."
+msgstr "Il server degli aggiornamenti non era raggiungibile (%s). WordPress riproverà più tardi."
+
+#: includes/class-cluvo-settings.php:321
+msgid "Automatische Updates"
+msgstr "Aggiornamenti automatici"
+
+#: includes/class-cluvo-settings.php:323
+msgid "Ausgeschaltet"
+msgstr "Disattivati"
+
+#: includes/class-cluvo-settings.php:323
+msgid "Eingeschaltet"
+msgstr "Attivati"
+
+#: includes/class-cluvo-settings.php:324
+msgid ""
+"Ein- und ausschalten unter Plugins in der Zeile von Cluvo. Neue Versionen "
+"kommen von wp.cluvo.ch."
+msgstr "Si attivano o disattivano in Plugin, nella riga di Cluvo. Le nuove versioni arrivano da wp.cluvo.ch."
+
+#. translators: %s: version number
+#: includes/class-cluvo-settings.php:334
+#, php-format
+msgid "Auf %s aktualisieren"
+msgstr "Aggiorna a %s"
+
+#: includes/class-cluvo-settings.php:338
+msgid "Jetzt nach Updates suchen"
+msgstr "Cerca aggiornamenti ora"
+
+#: includes/class-cluvo-settings.php:352
+msgid "Eine neue Version von Cluvo ist verfügbar."
+msgstr "È disponibile una nuova versione di Cluvo."
+
+#: includes/class-cluvo-settings.php:353
+msgid "Cluvo ist auf dem neuesten Stand."
+msgstr "Cluvo è aggiornato."
+
+#: includes/class-cluvo-settings.php:354
+#, fuzzy
+msgid ""
+"Der Update-Server von Cluvo ist gerade nicht erreichbar. Bitte versuche es "
+"später erneut."
+msgstr "Non è stato possibile inviare il modulo. Riprova più tardi."
 
 #. translators: %s: last four characters of the stored API key
-#: includes/class-cluvo-settings.php:273
+#: includes/class-cluvo-settings.php:380
 #, php-format
 msgid "Gespeichert (…%s)"
 msgstr "Salvata (…%s)"
 
-#: includes/class-cluvo-settings.php:274
+#: includes/class-cluvo-settings.php:381
 msgid "API-Key einfügen"
 msgstr "Incolla la chiave API"
 
-#: includes/class-cluvo-settings.php:281
+#: includes/class-cluvo-settings.php:388
 msgid "neu"
 msgstr "nuovo"
 
-#: includes/class-cluvo-settings.php:285
+#: includes/class-cluvo-settings.php:392
 msgid "Turnverein Musterdorf"
 msgstr "Società di ginnastica Esempio"
 
-#: includes/class-cluvo-settings.php:292
+#: includes/class-cluvo-settings.php:399
 msgid "Testen"
 msgstr "Verifica"
 
-#: includes/class-cluvo-settings.php:293
+#: includes/class-cluvo-settings.php:400
 msgid "Entfernen"
 msgstr "Rimuovi"
 
-#: includes/class-cluvo-settings.php:305 includes/class-cluvo-settings.php:352
+#: includes/class-cluvo-settings.php:412 includes/class-cluvo-settings.php:459
+#: includes/class-cluvo-updater.php:282
 msgid "Keine Berechtigung."
 msgstr "Autorizzazione negata."
 
 #. translators: %d: number of active forms
-#: includes/class-cluvo-settings.php:342
+#: includes/class-cluvo-settings.php:449
 #, php-format
 msgid "Verbunden – %d aktives Formular."
 msgid_plural "Verbunden – %d aktive Formulare."
@@ -457,3 +584,17 @@ msgstr "%1$s, %2$s"
 #: includes/class-cluvo-shortcodes.php:342
 msgid "Ganztägig"
 msgstr "Tutto il giorno"
+
+#. translators: %d: HTTP status code
+#: includes/class-cluvo-updater.php:118
+#, fuzzy, php-format
+msgid "Der Update-Server antwortete mit Status %d."
+msgstr "L’API di Cluvo ha risposto con lo stato %d."
+
+#: includes/class-cluvo-updater.php:122
+msgid "Der Update-Server lieferte keine gültigen Angaben."
+msgstr "Il server degli aggiornamenti non ha fornito dati validi."
+
+#: includes/class-cluvo-updater.php:255
+msgid "Nach Updates suchen"
+msgstr "Cerca aggiornamenti"

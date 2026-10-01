@@ -1,16 +1,16 @@
 <?php
 /**
- * Self-hosted plugin updater backed by GitHub Releases.
+ * Updates from Cluvo's own update server (wp.cluvo.ch).
  *
- * Polls the repository's "latest release" via the public GitHub API and feeds
- * the result into WordPress' native update system, so new versions show up in
- * the dashboard with a working "Update now" button and the release notes as
- * changelog in the "View details" modal.
+ * The plugin header carries `Update URI: https://wp.cluvo.ch/cluvo/`, so
+ * WordPress asks us – not wordpress.org – about new versions (filter
+ * update_plugins_wp.cluvo.ch, WordPress 5.8+). That also keeps a plugin that
+ * happens to be called "cluvo" on wordpress.org from ever replacing this one.
  *
- * Requirements:
- *  - The GitHub repository must be PUBLIC (no token is embedded).
- *  - Each release must attach the BUILT plugin zip (top-level folder cluvo/),
- *    produced by bin/build.php. The source zipball is not installable as-is.
+ * The server publishes https://wp.cluvo.ch/cluvo/info.json (built by
+ * bin/build.php, uploaded by the GitHub Action) and the versioned ZIPs next to
+ * it. New versions appear in the dashboard with "Update now", the changelog in
+ * "View details", and WordPress' automatic updates work as usual.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,11 +19,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Cluvo_Updater {
 
-	/** GitHub repository in "owner/repo" form. Adjust if the repo moves. */
-	const GITHUB_REPO = 'digitalifyCH/cluvo-wp';
+	const INFO_URL = 'https://wp.cluvo.ch/cluvo/info.json';
 
-	const CACHE_KEY = 'cluvo_update_release';
-	const CACHE_TTL = 43200; // 12 hours.
+	const CACHE_KEY = 'cluvo_update_info';
+
+	/** WordPress itself checks every 12 hours; this keeps our answer fresh in between. */
+	const CACHE_TTL = 6 * HOUR_IN_SECONDS;
+
+	/** A failed check is retried after this long, so an outage doesn't slow every admin page. */
+	const ERROR_TTL = HOUR_IN_SECONDS;
+
+	/** Release info of the old GitHub-based updater (≤ 0.2.0). */
+	const LEGACY_CACHE_KEY = 'cluvo_update_release';
 
 	/** @var string e.g. cluvo/cluvo.php */
 	private $basename;
@@ -35,152 +42,270 @@ class Cluvo_Updater {
 		$this->basename = plugin_basename( CLUVO_PLUGIN_FILE );
 		$this->slug     = dirname( $this->basename );
 
-		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'inject_update' ) );
+		add_filter( 'update_plugins_' . self::host(), array( $this, 'update_check' ), 10, 3 );
 		add_filter( 'plugins_api', array( $this, 'plugin_information' ), 20, 3 );
 		add_filter( 'upgrader_source_selection', array( $this, 'keep_folder_name' ), 10, 4 );
 		add_action( 'upgrader_process_complete', array( $this, 'flush_on_update' ), 10, 2 );
-	}
-
-	private function repo() {
-		return apply_filters( 'cluvo_update_github_repo', self::GITHUB_REPO );
+		add_filter( 'plugin_row_meta', array( $this, 'row_meta' ), 10, 2 );
+		add_action( 'admin_post_cluvo_check_updates', array( $this, 'handle_check' ) );
+		add_action( 'admin_notices', array( $this, 'plugins_screen_notice' ) );
 	}
 
 	/**
-	 * Normalised info about the latest release, cached.
-	 *
-	 * @return array{version:string, download_url:string, changelog:string, published:string}|array
+	 * Result of "Check for updates" from the plugin list (the settings page shows its own).
 	 */
-	private function get_release() {
-		$cached = get_transient( self::CACHE_KEY );
-		if ( false !== $cached ) {
-			return is_array( $cached ) ? $cached : array();
+	public function plugins_screen_notice() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && 'plugins' === $screen->id ) {
+			Cluvo_Settings::update_check_notice();
+		}
+	}
+
+	/**
+	 * Address of info.json. Override for a staging server in wp-config.php:
+	 *
+	 *   define( 'CLUVO_UPDATE_URL', 'https://staging.example.ch/cluvo/info.json' );
+	 */
+	public static function info_url() {
+		$url = defined( 'CLUVO_UPDATE_URL' ) ? CLUVO_UPDATE_URL : self::INFO_URL;
+
+		return (string) apply_filters( 'cluvo_update_info_url', $url );
+	}
+
+	/**
+	 * Host of the update server – must match the Update URI header, otherwise
+	 * WordPress never calls update_check().
+	 */
+	private static function host() {
+		return (string) wp_parse_url( self::INFO_URL, PHP_URL_HOST );
+	}
+
+	/**
+	 * Latest release as published on the update server, cached.
+	 *
+	 * @return array{info:array, checked:int, error:string}
+	 *   info: version, download_url, requires, requires_php, tested,
+	 *   last_updated, homepage, icons, sections – empty if unknown.
+	 */
+	public function get_status( $force = false ) {
+		if ( ! $force ) {
+			$cached = get_transient( self::CACHE_KEY );
+			if ( is_array( $cached ) && isset( $cached['info'], $cached['checked'] ) ) {
+				return $cached + array( 'error' => '' );
+			}
 		}
 
-		$url = 'https://api.github.com/repos/' . $this->repo() . '/releases/latest';
+		$status = array(
+			'info'    => array(),
+			'checked' => time(),
+			'error'   => '',
+		);
 
 		$response = wp_remote_get(
-			$url,
+			self::info_url(),
 			array(
-				'timeout' => 15,
-				'headers' => array(
-					'Accept'     => 'application/vnd.github+json',
-					'User-Agent' => 'Cluvo-WordPress-Plugin',
-				),
+				'timeout'     => 10,
+				'redirection' => 0,
+				'user-agent'  => 'Cluvo-WordPress/' . CLUVO_VERSION . '; ' . home_url( '/' ),
+				'headers'     => array( 'Accept' => 'application/json' ),
 			)
 		);
 
-		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			// Cache the miss briefly so a hiccup doesn't slow every admin page.
-			set_transient( self::CACHE_KEY, array(), HOUR_IN_SECONDS );
-			return array();
-		}
-
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( ! is_array( $body ) || empty( $body['tag_name'] ) ) {
-			set_transient( self::CACHE_KEY, array(), HOUR_IN_SECONDS );
-			return array();
-		}
-
-		$release = array(
-			'version'      => ltrim( (string) $body['tag_name'], 'vV' ),
-			'download_url' => $this->find_zip_asset( $body ),
-			'changelog'    => isset( $body['body'] ) ? self::markdown_to_html( $body['body'] ) : '',
-			'published'    => isset( $body['published_at'] ) ? gmdate( 'Y-m-d', strtotime( $body['published_at'] ) ) : '',
-		);
-
-		set_transient( self::CACHE_KEY, $release, self::CACHE_TTL );
-
-		return $release;
-	}
-
-	/**
-	 * Pick the built plugin zip from the release assets (e.g. cluvo-0.2.0.zip).
-	 */
-	private function find_zip_asset( $body ) {
-		if ( empty( $body['assets'] ) || ! is_array( $body['assets'] ) ) {
-			return '';
-		}
-		// Only accept assets of this repository's releases.
-		$prefix = 'https://github.com/' . $this->repo() . '/releases/download/';
-		foreach ( $body['assets'] as $asset ) {
-			if ( isset( $asset['name'], $asset['browser_download_url'] ) && preg_match( '/\.zip$/i', $asset['name'] )
-				&& 0 === stripos( $asset['browser_download_url'], $prefix ) ) {
-				return $asset['browser_download_url'];
+		if ( is_wp_error( $response ) ) {
+			$status['error'] = $response->get_error_message();
+		} elseif ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			/* translators: %d: HTTP status code */
+			$status['error'] = sprintf( __( 'Der Update-Server antwortete mit Status %d.', 'cluvo' ), (int) wp_remote_retrieve_response_code( $response ) );
+		} else {
+			$status['info'] = self::validate( json_decode( wp_remote_retrieve_body( $response ), true ) );
+			if ( empty( $status['info'] ) ) {
+				$status['error'] = __( 'Der Update-Server lieferte keine gültigen Angaben.', 'cluvo' );
 			}
 		}
-		return '';
+
+		set_transient( self::CACHE_KEY, $status, '' === $status['error'] ? self::CACHE_TTL : self::ERROR_TTL );
+
+		return $status;
 	}
 
 	/**
-	 * Add our plugin to the update transient when a newer release exists.
+	 * Only take what we understand. The package must come from the update
+	 * server itself – a tampered info.json must not point WordPress elsewhere.
 	 */
-	public function inject_update( $transient ) {
-		if ( empty( $transient->checked ) ) {
-			return $transient;
+	private static function validate( $data ) {
+		if ( ! is_array( $data ) || empty( $data['version'] ) || empty( $data['download_url'] ) ) {
+			return array();
 		}
 
-		$release = $this->get_release();
-		if ( empty( $release['version'] ) || empty( $release['download_url'] ) ) {
-			return $transient;
+		$version  = (string) $data['version'];
+		$download = (string) $data['download_url'];
+		$base     = trailingslashit( dirname( self::info_url() ) );
+
+		if ( ! preg_match( '/^\d+\.\d+\.\d+$/', $version ) || 0 !== strpos( $download, $base ) || ! preg_match( '/\.zip$/i', $download ) ) {
+			return array();
 		}
 
-		if ( version_compare( CLUVO_VERSION, $release['version'], '<' ) ) {
-			$transient->response[ $this->basename ] = (object) array(
-				'slug'        => $this->slug,
-				'plugin'      => $this->basename,
-				'new_version' => $release['version'],
-				'url'         => 'https://github.com/' . $this->repo(),
-				'package'     => $release['download_url'],
-			);
-		} else {
-			$transient->no_update[ $this->basename ] = (object) array(
-				'slug'        => $this->slug,
-				'plugin'      => $this->basename,
-				'new_version' => CLUVO_VERSION,
-				'url'         => 'https://github.com/' . $this->repo(),
-				'package'     => '',
-			);
+		$text = static function ( $key ) use ( $data ) {
+			return isset( $data[ $key ] ) && is_scalar( $data[ $key ] ) ? sanitize_text_field( (string) $data[ $key ] ) : '';
+		};
+
+		$icons = array();
+		if ( isset( $data['icons'] ) && is_array( $data['icons'] ) ) {
+			foreach ( $data['icons'] as $size => $url ) {
+				if ( is_string( $url ) && 0 === strpos( $url, $base ) ) {
+					$icons[ sanitize_key( $size ) ] = esc_url_raw( $url );
+				}
+			}
 		}
 
-		return $transient;
+		$sections = array();
+		if ( isset( $data['sections'] ) && is_array( $data['sections'] ) ) {
+			foreach ( array( 'description', 'installation', 'changelog' ) as $section ) {
+				if ( isset( $data['sections'][ $section ] ) && is_string( $data['sections'][ $section ] ) ) {
+					$sections[ $section ] = wp_kses_post( $data['sections'][ $section ] );
+				}
+			}
+		}
+
+		return array(
+			'version'      => $version,
+			'download_url' => esc_url_raw( $download ),
+			'requires'     => $text( 'requires' ),
+			'requires_php' => $text( 'requires_php' ),
+			'tested'       => $text( 'tested' ),
+			'last_updated' => $text( 'last_updated' ),
+			'homepage'     => isset( $data['homepage'] ) && is_string( $data['homepage'] ) ? esc_url_raw( $data['homepage'] ) : 'https://www.cluvo.ch',
+			'icons'        => $icons,
+			'sections'     => $sections,
+		);
 	}
 
 	/**
-	 * Provide data for the "View version details" modal.
+	 * Is a newer version than the installed one published?
+	 */
+	public function update_available() {
+		$status = $this->get_status();
+
+		return ! empty( $status['info']['version'] ) && version_compare( CLUVO_VERSION, $status['info']['version'], '<' );
+	}
+
+	/**
+	 * Answer WordPress' update check for this plugin (filter update_plugins_{host}).
+	 * WordPress compares the version itself and puts us into "response" or "no_update".
+	 */
+	public function update_check( $update, $plugin_data, $plugin_file ) {
+		if ( $plugin_file !== $this->basename ) {
+			return $update;
+		}
+
+		$info = $this->get_status()['info'];
+		if ( empty( $info['version'] ) ) {
+			return $update;
+		}
+
+		return array(
+			'slug'         => $this->slug,
+			'version'      => $info['version'],
+			'url'          => $info['homepage'],
+			'package'      => $info['download_url'],
+			'icons'        => $info['icons'],
+			'tested'       => $info['tested'],
+			'requires'     => $info['requires'],
+			'requires_php' => $info['requires_php'],
+		);
+	}
+
+	/**
+	 * Data for the "View details" modal.
 	 */
 	public function plugin_information( $result, $action, $args ) {
-		if ( 'plugin_information' !== $action ) {
-			return $result;
-		}
-		if ( empty( $args->slug ) || $args->slug !== $this->slug ) {
+		if ( 'plugin_information' !== $action || empty( $args->slug ) || $args->slug !== $this->slug ) {
 			return $result;
 		}
 
-		$release = $this->get_release();
-		if ( empty( $release['version'] ) ) {
+		$info = $this->get_status()['info'];
+		if ( empty( $info['version'] ) ) {
 			return $result;
 		}
 
 		return (object) array(
 			'name'          => 'Cluvo',
 			'slug'          => $this->slug,
-			'version'       => $release['version'],
-			'author'        => '<a href="https://cluvo.ch">Cluvo</a>',
-			'homepage'      => 'https://github.com/' . $this->repo(),
-			'requires'      => '6.0',
-			'requires_php'  => '8.0',
-			'last_updated'  => $release['published'],
-			'download_link' => $release['download_url'],
-			'sections'      => array(
-				'changelog' => $release['changelog'],
-			),
+			'version'       => $info['version'],
+			'author'        => '<a href="https://www.cluvo.ch">Cluvo</a>',
+			'homepage'      => $info['homepage'],
+			'requires'      => $info['requires'],
+			'requires_php'  => $info['requires_php'],
+			'tested'        => $info['tested'],
+			'last_updated'  => $info['last_updated'],
+			'download_link' => $info['download_url'],
+			'icons'         => $info['icons'],
+			'sections'      => $info['sections'],
 		);
 	}
 
 	/**
-	 * The release zip contains cluvo/. If the plugin lives in another folder
-	 * (e.g. a git checkout named cluvo-wp), rename the unpacked source so the
-	 * update replaces it instead of installing a second copy.
+	 * "Check for updates" in the plugin list.
+	 */
+	public function row_meta( $links, $file ) {
+		if ( $file !== $this->basename || ! current_user_can( 'update_plugins' ) ) {
+			return $links;
+		}
+
+		$links[] = '<a href="' . esc_url( self::check_url( 'plugins.php' ) ) . '">' . esc_html__( 'Nach Updates suchen', 'cluvo' ) . '</a>';
+
+		return $links;
+	}
+
+	/**
+	 * Link that asks the update server right away and returns to $return_to.
+	 */
+	public static function check_url( $return_to ) {
+		return wp_nonce_url(
+			add_query_arg(
+				array(
+					'action' => 'cluvo_check_updates',
+					'return' => rawurlencode( $return_to ),
+				),
+				admin_url( 'admin-post.php' )
+			),
+			'cluvo_check_updates'
+		);
+	}
+
+	/**
+	 * Forget every cached answer, ask again and refresh WordPress' own list,
+	 * so "Update now" appears immediately.
+	 */
+	public function handle_check() {
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			wp_die( esc_html__( 'Keine Berechtigung.', 'cluvo' ), 403 );
+		}
+		check_admin_referer( 'cluvo_check_updates' );
+
+		delete_transient( self::LEGACY_CACHE_KEY );
+		$status = $this->get_status( true );
+
+		delete_site_transient( 'update_plugins' );
+		if ( ! function_exists( 'wp_update_plugins' ) ) {
+			require_once ABSPATH . WPINC . '/update.php';
+		}
+		wp_update_plugins();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- checked above.
+		$return = isset( $_GET['return'] ) ? sanitize_text_field( rawurldecode( wp_unslash( $_GET['return'] ) ) ) : 'plugins.php';
+		$return = in_array( $return, array( 'plugins.php', 'options-general.php?page=cluvo' ), true ) ? $return : 'plugins.php';
+
+		$result = '' !== $status['error'] ? 'error' : ( $this->update_available() ? 'available' : 'current' );
+
+		wp_safe_redirect( add_query_arg( 'cluvo_update_check', $result, admin_url( $return ) ) );
+		exit;
+	}
+
+	/**
+	 * The ZIP contains cluvo/. If the plugin lives in another folder (e.g. a git
+	 * checkout named cluvo-wp), rename the unpacked source so the update
+	 * replaces it instead of installing a second copy.
 	 */
 	public function keep_folder_name( $source, $remote_source, $upgrader, $hook_extra = array() ) {
 		global $wp_filesystem;
@@ -198,63 +323,12 @@ class Cluvo_Updater {
 	}
 
 	/**
-	 * Drop the cached release right after this plugin updates.
+	 * Drop the cached release info right after a plugin update.
 	 */
 	public function flush_on_update( $upgrader, $options ) {
 		if ( isset( $options['action'], $options['type'] ) && 'update' === $options['action'] && 'plugin' === $options['type'] ) {
 			delete_transient( self::CACHE_KEY );
+			delete_transient( self::LEGACY_CACHE_KEY );
 		}
-	}
-
-	/**
-	 * Tiny Markdown→HTML converter for release notes (headings, bullets, bold,
-	 * inline code). Good enough for the "View details" changelog.
-	 */
-	private static function markdown_to_html( $markdown ) {
-		$out   = '';
-		$inul  = false;
-		$lines = preg_split( '/\r?\n/', (string) $markdown );
-
-		foreach ( $lines as $line ) {
-			$line = rtrim( $line );
-
-			if ( preg_match( '/^#{1,6}\s*(.+)$/', $line, $m ) ) {
-				if ( $inul ) {
-					$out  .= "</ul>\n";
-					$inul  = false;
-				}
-				$out .= '<h4>' . self::inline( $m[1] ) . "</h4>\n";
-			} elseif ( preg_match( '/^\s*[-*]\s+(.+)$/', $line, $m ) ) {
-				if ( ! $inul ) {
-					$out  .= "<ul>\n";
-					$inul  = true;
-				}
-				$out .= '<li>' . self::inline( $m[1] ) . "</li>\n";
-			} elseif ( '' === trim( $line ) ) {
-				if ( $inul ) {
-					$out  .= "</ul>\n";
-					$inul  = false;
-				}
-			} else {
-				if ( $inul ) {
-					$out  .= "</ul>\n";
-					$inul  = false;
-				}
-				$out .= '<p>' . self::inline( $line ) . "</p>\n";
-			}
-		}
-
-		if ( $inul ) {
-			$out .= "</ul>\n";
-		}
-
-		return trim( $out );
-	}
-
-	private static function inline( $text ) {
-		$text = esc_html( $text );
-		$text = preg_replace( '/\*\*(.+?)\*\*/', '<strong>$1</strong>', $text );
-		$text = preg_replace( '/`(.+?)`/', '<code>$1</code>', $text );
-		return $text;
 	}
 }

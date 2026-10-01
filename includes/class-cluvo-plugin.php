@@ -18,6 +18,9 @@ class Cluvo_Plugin {
 	/** @var Cluvo_Settings */
 	public $settings;
 
+	/** @var Cluvo_Updater */
+	public $updater;
+
 	public static function instance() {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -27,11 +30,11 @@ class Cluvo_Plugin {
 
 	private function __construct() {
 		$this->client   = new Cluvo_Client();
-		$this->settings = new Cluvo_Settings( $this->client );
+		$this->updater  = new Cluvo_Updater();
+		$this->settings = new Cluvo_Settings( $this->client, $this->updater );
 
 		new Cluvo_Shortcodes( $this->client );
 		new Cluvo_Rest( $this->client );
-		new Cluvo_Updater();
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );

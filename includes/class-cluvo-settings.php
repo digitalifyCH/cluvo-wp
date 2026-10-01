@@ -18,11 +18,15 @@ class Cluvo_Settings {
 	/** @var Cluvo_Client */
 	private $client;
 
+	/** @var Cluvo_Updater */
+	private $updater;
+
 	/** @var array Settings errors already added in this request (sanitize may run twice). */
 	private $errors = array();
 
-	public function __construct( Cluvo_Client $client ) {
-		$this->client = $client;
+	public function __construct( Cluvo_Client $client, Cluvo_Updater $updater ) {
+		$this->client  = $client;
+		$this->updater = $updater;
 
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -168,6 +172,7 @@ class Cluvo_Settings {
 			<?php if ( isset( $_GET['cluvo_flushed'] ) ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Der Cache wurde geleert.', 'cluvo' ); ?></p></div>
 			<?php endif; ?>
+			<?php Cluvo_Settings::update_check_notice(); ?>
 
 			<p><?php esc_html_e( 'Verbinde diese Webseite mit einem oder mehreren Cluvo-Vereinen. Einen API-Key erstellst du in Cluvo unter Einstellungen → Integration.', 'cluvo' ); ?></p>
 
@@ -224,6 +229,8 @@ class Cluvo_Settings {
 				</p>
 			</form>
 
+			<?php $this->render_updates(); ?>
+
 			<hr />
 			<h2><?php esc_html_e( 'Shortcodes', 'cluvo' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Ist nur ein Verein hinterlegt, kann account="…" weggelassen werden. «Testen» zeigt die Shortcodes der aktiven Formulare eines Vereins.', 'cluvo' ); ?></p>
@@ -256,6 +263,106 @@ class Cluvo_Settings {
 			</template>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Installed and published version, auto-update state and a button that asks
+	 * the update server right away.
+	 */
+	private function render_updates() {
+		$status    = $this->updater->get_status();
+		$latest    = isset( $status['info']['version'] ) ? $status['info']['version'] : '';
+		$available = '' !== $latest && version_compare( CLUVO_VERSION, $latest, '<' );
+		$basename  = plugin_basename( CLUVO_PLUGIN_FILE );
+		$can       = current_user_can( 'update_plugins' );
+		$auto      = function_exists( 'wp_is_auto_update_enabled_for_type' ) && wp_is_auto_update_enabled_for_type( 'plugin' )
+			&& in_array( $basename, (array) get_site_option( 'auto_update_plugins', array() ), true );
+		?>
+		<hr />
+		<h2><?php esc_html_e( 'Updates', 'cluvo' ); ?></h2>
+		<table class="form-table cluvo-updates" role="presentation">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Installierte Version', 'cluvo' ); ?></th>
+				<td><code><?php echo esc_html( CLUVO_VERSION ); ?></code></td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Neueste Version', 'cluvo' ); ?></th>
+				<td>
+					<?php if ( '' === $latest ) : ?>
+						<span>–</span>
+					<?php else : ?>
+						<code><?php echo esc_html( $latest ); ?></code>
+						<?php if ( $available ) : ?>
+							<span class="cluvo-badge cluvo-badge--update"><?php esc_html_e( 'Update verfügbar', 'cluvo' ); ?></span>
+						<?php else : ?>
+							<span class="cluvo-badge cluvo-badge--ok"><?php esc_html_e( 'Aktuell', 'cluvo' ); ?></span>
+						<?php endif; ?>
+					<?php endif; ?>
+					<p class="description">
+						<?php
+						printf(
+							/* translators: %s: date and time of the last check */
+							esc_html__( 'Zuletzt geprüft: %s', 'cluvo' ),
+							esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $status['checked'] ) )
+						);
+						?>
+					</p>
+					<?php if ( '' !== $status['error'] ) : ?>
+						<p class="description cluvo-updates__error">
+							<?php
+							/* translators: %s: technical error message */
+							printf( esc_html__( 'Der Update-Server war nicht erreichbar (%s). WordPress versucht es später erneut.', 'cluvo' ), esc_html( $status['error'] ) );
+							?>
+						</p>
+					<?php endif; ?>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Automatische Updates', 'cluvo' ); ?></th>
+				<td>
+					<?php echo $auto ? esc_html__( 'Eingeschaltet', 'cluvo' ) : esc_html__( 'Ausgeschaltet', 'cluvo' ); ?>
+					<p class="description"><?php esc_html_e( 'Ein- und ausschalten unter Plugins in der Zeile von Cluvo. Neue Versionen kommen von wp.cluvo.ch.', 'cluvo' ); ?></p>
+				</td>
+			</tr>
+		</table>
+		<?php if ( $can ) : ?>
+			<p>
+				<?php if ( $available ) : ?>
+					<a class="button button-primary" href="<?php echo esc_url( wp_nonce_url( self_admin_url( 'update.php?action=upgrade-plugin&plugin=' . rawurlencode( $basename ) ), 'upgrade-plugin_' . $basename ) ); ?>">
+						<?php
+						/* translators: %s: version number */
+						printf( esc_html__( 'Auf %s aktualisieren', 'cluvo' ), esc_html( $latest ) );
+						?>
+					</a>
+				<?php endif; ?>
+				<a class="button" href="<?php echo esc_url( Cluvo_Updater::check_url( 'options-general.php?page=' . self::PAGE ) ); ?>"><?php esc_html_e( 'Jetzt nach Updates suchen', 'cluvo' ); ?></a>
+			</p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Result of "Check for updates" – on this page and in the plugin list.
+	 */
+	public static function update_check_notice() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+		$result = isset( $_GET['cluvo_update_check'] ) ? sanitize_key( wp_unslash( $_GET['cluvo_update_check'] ) ) : '';
+
+		$messages = array(
+			'available' => array( 'warning', __( 'Eine neue Version von Cluvo ist verfügbar.', 'cluvo' ) ),
+			'current'   => array( 'success', __( 'Cluvo ist auf dem neuesten Stand.', 'cluvo' ) ),
+			'error'     => array( 'error', __( 'Der Update-Server von Cluvo ist gerade nicht erreichbar. Bitte versuche es später erneut.', 'cluvo' ) ),
+		);
+
+		if ( ! isset( $messages[ $result ] ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+			esc_attr( $messages[ $result ][0] ),
+			esc_html( $messages[ $result ][1] )
+		);
 	}
 
 	/**

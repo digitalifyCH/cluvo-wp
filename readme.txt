@@ -4,7 +4,7 @@ Tags: cluvo, verein, formulare, veranstaltungen, news
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,14 @@ das Attribut entfallen.
 
 Die Plugin-Oberfläche ist auf Deutsch, Französisch und Italienisch verfügbar (auch fr_CH/it_CH).
 
+= Updates =
+
+Neue Versionen kommen direkt von Cluvo (wp.cluvo.ch). WordPress zeigt sie wie
+gewohnt unter Dashboard → Aktualisierungen an. Unter Einstellungen → Cluvo
+siehst du die installierte und die neueste Version und kannst sofort nach
+Updates suchen. Automatische Updates schaltest du unter Plugins in der Zeile
+von Cluvo ein.
+
 = Für Entwickler =
 
 * `CLUVO_API_BASE_URL` (wp-config.php) – andere API-Basis, z.B. für lokale Tests.
@@ -45,15 +53,23 @@ Die Plugin-Oberfläche ist auf Deutsch, Französisch und Italienisch verfügbar 
 * `cluvo_submit_rate_limit`, `cluvo_submit_rate_window` – Anmeldungen pro IP und Verein
   (Standard 20 pro 10 Minuten, 0 schaltet ab).
 * `cluvo_client_ip` – IP-Adresse hinter einem Reverse Proxy (z.B. Cloudflare) bestimmen.
+* `CLUVO_UPDATE_URL` (wp-config.php) bzw. Filter `cluvo_update_info_url` – anderer Update-Server, z.B. Staging.
 
 == Installation ==
 
-1. Plugin-Ordner nach `wp-content/plugins/cluvo` kopieren und aktivieren.
+1. Die neueste Version unter https://wp.cluvo.ch/cluvo/cluvo-latest.zip herunterladen und in WordPress unter
+   Plugins → Installieren → Plugin hochladen installieren, dann aktivieren.
 2. Unter Einstellungen → Cluvo pro Verein den API-Key eintragen. Du findest
    ihn in Cluvo unter Einstellungen → Integration.
 3. Shortcodes auf einer Seite oder in einem Beitrag verwenden.
 
 == Changelog ==
+
+= 0.3.0 =
+* Updates kommen neu von wp.cluvo.ch statt von GitHub. Der Header «Update URI» sorgt dafür, dass nur Cluvo selbst Updates für dieses Plugin liefert.
+* Einstellungen → Cluvo zeigt die installierte und die neueste Version, ob automatische Updates an sind, und hat einen Knopf «Jetzt nach Updates suchen» – auch als Link in der Plugin-Liste.
+* «Details ansehen» zeigt Beschreibung, Installation und Changelog, die Update-Übersicht das Cluvo-Icon.
+* Ein Update wird nur installiert, wenn das Paket vom Update-Server selbst stammt.
 
 = 0.2.0 =
 * Formulare: Fixe Mitgliedschaften erscheinen als Auswahlkarten mit Beschreibung und Preis (CHF … pro Jahr/Monat), inkl. Pflichtfeld und Fehleranzeige.
