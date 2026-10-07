@@ -249,7 +249,7 @@ class Cluvo_Settings {
 					</tr>
 					<tr>
 						<td><code>[cluvo_events<?php echo esc_html( $example ); ?> limit="10"]</code></td>
-						<td><?php echo wp_kses( __( '<code>limit</code> – Anzahl Termine (Serien einzeln gezählt, Standard 10) · <code>category</code> – ID der Kategorie · <code>from</code>, <code>to</code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate)', 'cluvo' ), array( 'code' => array() ) ); ?></td>
+						<td><?php echo wp_kses( __( '<code>limit</code> – Anzahl Termine (Serien einzeln gezählt, Standard 10) · <code>category</code> – ID der Kategorie · <code>from</code>, <code>to</code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate) · <code>layout="cards"</code> – Karten mit Titelbild statt Liste', 'cluvo' ), array( 'code' => array() ) ); ?></td>
 					</tr>
 					<tr>
 						<td><code>[cluvo_news<?php echo esc_html( $example ); ?> limit="6"]</code></td>

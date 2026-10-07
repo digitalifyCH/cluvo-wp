@@ -127,6 +127,14 @@ class Cluvo_Client {
 		return $this->get( 'events', $params, $account_id );
 	}
 
+	/**
+	 * One public event with content (Cluvo ≥ 2026-10). For a series: the occurrence on $date, otherwise the next one;
+	 * `upcoming` lists the following dates.
+	 */
+	public function get_event( $id, $date, $account_id ) {
+		return $this->get( 'events/' . absint( $id ), $date ? array( 'datum' => $date ) : array(), $account_id );
+	}
+
 	public function get_news( $params, $account_id ) {
 		return $this->get( 'news', $params, $account_id );
 	}

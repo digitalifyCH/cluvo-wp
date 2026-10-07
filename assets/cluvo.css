@@ -757,6 +757,7 @@
 }
 
 .cluvo-event__body {
+	flex: 1;
 	min-width: 0;
 }
 
@@ -784,6 +785,155 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.25rem 1rem;
+}
+
+.cluvo-event__title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.cluvo-event__title a:hover {
+	text-decoration: underline;
+}
+
+/* Titelbild klein neben dem Termin */
+.cluvo-event__thumb {
+	display: block;
+	flex: none;
+	width: 8rem;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	border-radius: 8px;
+	background: #f2f2f2;
+}
+
+.cluvo-event__thumb img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	margin: 0;
+	object-fit: cover;
+}
+
+@media (max-width: 480px) {
+	.cluvo-event__thumb {
+		display: none;
+	}
+}
+
+/* layout="cards": Karten mit Titelbild wie die News */
+.cluvo-events--cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+	gap: 1.5rem;
+}
+
+.cluvo-event-card {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	overflow: hidden;
+	border: 1px solid #e6e6e6;
+	border-radius: var(--cluvo-radius);
+	background: var(--cluvo-surface);
+}
+
+.cluvo-event-card__image {
+	position: relative;
+	display: block;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	/* Ohne Titelbild: Fläche in der Farbe der Kategorie */
+	background: color-mix(in srgb, var(--cluvo-category-color, var(--cluvo-accent)) 14%, #fff);
+}
+
+.cluvo-event-card__image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	margin: 0;
+	object-fit: cover;
+}
+
+.cluvo-event-card__image .cluvo-event__badge {
+	position: absolute;
+	top: 0.75rem;
+	left: 0.75rem;
+	min-height: 0;
+	width: 3.25rem;
+	background: #fff;
+	color: #1a1a1a;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+
+.cluvo-event-card__content {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.25rem;
+	padding: 1rem 1.125rem 1.125rem;
+}
+
+.cluvo-event-card__content .cluvo-event__title {
+	margin: 0.25rem 0 0.125rem;
+	font-size: 1.125rem;
+}
+
+/* Einzelansicht eines Termins */
+.cluvo-event-detail__facts {
+	margin: 0 0 1.5rem;
+	padding: 0.875rem 1rem;
+	border-left: 4px solid var(--cluvo-category-color, var(--cluvo-accent));
+	border-radius: 8px;
+	background: #f5f5f5;
+}
+
+.cluvo-event-detail__facts p {
+	margin: 0.125rem 0;
+	font-size: 1rem;
+}
+
+.cluvo-event-detail__facts .cluvo-event__location {
+	color: var(--cluvo-muted);
+}
+
+.cluvo-event-detail__dates {
+	margin-top: 2rem;
+}
+
+.cluvo-event-detail__dates h3 {
+	margin: 0 0 0.75rem;
+	font-size: 1.0625rem;
+}
+
+.cluvo-event-detail__dates ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cluvo-event-detail__dates li {
+	margin: 0;
+}
+
+.cluvo-event-detail__dates a {
+	display: inline-block;
+	padding: 0.375rem 0.875rem;
+	border: 1px solid #e0e0e0;
+	border-radius: 999px;
+	font-size: 0.9375rem;
+	text-decoration: none;
+	color: inherit;
+}
+
+.cluvo-event-detail__dates a:hover {
+	border-color: var(--cluvo-accent);
 }
 
 /* ---------- News ---------- */
@@ -919,4 +1069,33 @@
 .cluvo-article__content img {
 	max-width: 100%;
 	height: auto;
+}
+
+/* Inhalt aus dem Cluvo-Editor: Bilder mit Legende, Galerien */
+.cluvo-article__content figure {
+	margin: 1.5rem 0;
+}
+
+.cluvo-article__content figcaption {
+	margin-top: 0.5rem;
+	font-size: 0.875rem;
+	color: var(--cluvo-muted);
+}
+
+.cluvo-article__content .cluvo-gallery {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+	gap: 0.75rem;
+	margin: 1.5rem 0;
+}
+
+.cluvo-article__content .cluvo-gallery figure {
+	margin: 0;
+}
+
+.cluvo-article__content .cluvo-gallery img {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: 6px;
 }

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cluvo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 13:54+0200\n"
+"POT-Creation-Date: 2026-10-07 11:07+0200\n"
 "PO-Revision-Date: 2026-09-17 00:00+0200\n"
 "Last-Translator: Cluvo\n"
 "Language-Team: Cluvo\n"
@@ -30,25 +30,25 @@ msgid ""
 msgstr ""
 "Sono configurate più associazioni – indica account=\"…\" nello shortcode."
 
-#: includes/class-cluvo-client.php:146 includes/class-cluvo-client.php:245
+#: includes/class-cluvo-client.php:154 includes/class-cluvo-client.php:253
 msgid "Unbekannter oder unvollständiger Verein."
 msgstr "Associazione sconosciuta o incompleta."
 
 #. translators: %s: technical error message
-#: includes/class-cluvo-client.php:177
+#: includes/class-cluvo-client.php:185
 #, php-format
 msgid "Cluvo ist nicht erreichbar (%s)."
 msgstr "Cluvo non è raggiungibile (%s)."
 
-#: includes/class-cluvo-client.php:190
+#: includes/class-cluvo-client.php:198
 msgid "Der API-Key ist ungültig oder wurde in Cluvo widerrufen."
 msgstr "La chiave API non è valida o è stata revocata in Cluvo."
 
-#: includes/class-cluvo-client.php:192
+#: includes/class-cluvo-client.php:200
 msgid "Kein Zugriff auf die Cluvo-API."
 msgstr "Nessun accesso all’API di Cluvo."
 
-#: includes/class-cluvo-client.php:194
+#: includes/class-cluvo-client.php:202
 msgid ""
 "Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in "
 "Cluvo aktiv und öffentlich?"
@@ -56,23 +56,23 @@ msgstr ""
 "Non trovato. Lo slug è corretto e il modulo o l’articolo è attivo e pubblico "
 "in Cluvo?"
 
-#: includes/class-cluvo-client.php:196
+#: includes/class-cluvo-client.php:204
 msgid "Zu viele Anfragen an Cluvo. Bitte versuche es gleich nochmals."
 msgstr "Troppe richieste a Cluvo. Riprova tra poco."
 
 #. translators: %d: HTTP status code
-#: includes/class-cluvo-client.php:199
+#: includes/class-cluvo-client.php:207
 #, php-format
 msgid "Cluvo meldet einen Serverfehler (Status %d)."
 msgstr "Cluvo segnala un errore del server (stato %d)."
 
 #. translators: %d: HTTP status code
-#: includes/class-cluvo-client.php:202
+#: includes/class-cluvo-client.php:210
 #, php-format
 msgid "Cluvo-API antwortete mit Status %d."
 msgstr "L’API di Cluvo ha risposto con lo stato %d."
 
-#: includes/class-cluvo-client.php:327
+#: includes/class-cluvo-client.php:335
 msgid "Cluvo ist noch nicht konfiguriert."
 msgstr "Cluvo non è ancora configurato."
 
@@ -374,12 +374,14 @@ msgstr "<code>slug</code> – slug del modulo in Cluvo (obbligatorio)"
 msgid ""
 "<code>limit</code> – Anzahl Termine (Serien einzeln gezählt, Standard 10) · "
 "<code>category</code> – ID der Kategorie · <code>from</code>, <code>to</"
-"code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate)"
+"code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate) · "
+"<code>layout=\"cards\"</code> – Karten mit Titelbild statt Liste"
 msgstr ""
 "<code>limit</code> – numero di date (serie contate singolarmente, "
 "predefinito 10) · <code>category</code> – ID della categoria · <code>from</"
 "code>, <code>to</code> – periodo nel formato AAAA-MM-GG (predefinito: da "
-"oggi per 12 mesi)"
+"oggi per 12 mesi) · <code>layout=\"cards\"</code> – schede con immagine "
+"invece di un elenco"
 
 #: includes/class-cluvo-settings.php:256
 msgid ""
@@ -423,7 +425,9 @@ msgstr "Ultimo controllo: %s"
 msgid ""
 "Der Update-Server war nicht erreichbar (%s). WordPress versucht es später "
 "erneut."
-msgstr "Il server degli aggiornamenti non era raggiungibile (%s). WordPress riproverà più tardi."
+msgstr ""
+"Il server degli aggiornamenti non era raggiungibile (%s). WordPress "
+"riproverà più tardi."
 
 #: includes/class-cluvo-settings.php:321
 msgid "Automatische Updates"
@@ -441,7 +445,9 @@ msgstr "Attivati"
 msgid ""
 "Ein- und ausschalten unter Plugins in der Zeile von Cluvo. Neue Versionen "
 "kommen von wp.cluvo.ch."
-msgstr "Si attivano o disattivano in Plugin, nella riga di Cluvo. Le nuove versioni arrivano da wp.cluvo.ch."
+msgstr ""
+"Si attivano o disattivano in Plugin, nella riga di Cluvo. Le nuove versioni "
+"arrivano da wp.cluvo.ch."
 
 #. translators: %s: version number
 #: includes/class-cluvo-settings.php:334
@@ -462,11 +468,10 @@ msgid "Cluvo ist auf dem neuesten Stand."
 msgstr "Cluvo è aggiornato."
 
 #: includes/class-cluvo-settings.php:354
-#, fuzzy
 msgid ""
 "Der Update-Server von Cluvo ist gerade nicht erreichbar. Bitte versuche es "
 "später erneut."
-msgstr "Non è stato possibile inviare il modulo. Riprova più tardi."
+msgstr "Il server degli aggiornamenti di Cluvo non è raggiungibile al momento. Riprova più tardi."
 
 #. translators: %s: last four characters of the stored API key
 #: includes/class-cluvo-settings.php:380
@@ -522,74 +527,84 @@ msgstr "Indica lo slug di un modulo: [cluvo_form slug=\"…\"]."
 msgid "Das Formular konnte nicht geladen werden."
 msgstr "Non è stato possibile caricare il modulo."
 
-#: includes/class-cluvo-shortcodes.php:118
+#: includes/class-cluvo-shortcodes.php:129
 msgid "Veranstaltungen konnten nicht geladen werden."
 msgstr "Non è stato possibile caricare gli eventi."
 
-#: includes/class-cluvo-shortcodes.php:123
+#: includes/class-cluvo-shortcodes.php:134
 msgid "Aktuell sind keine Veranstaltungen geplant."
 msgstr "Al momento non sono previsti eventi."
 
-#: includes/class-cluvo-shortcodes.php:206
-msgid "News konnten nicht geladen werden."
-msgstr "Non è stato possibile caricare le notizie."
+#: includes/class-cluvo-shortcodes.php:231
+msgid "Veranstaltung nicht gefunden."
+msgstr "Evento non trovato."
 
-#: includes/class-cluvo-shortcodes.php:211
-msgid "Noch keine News vorhanden."
-msgstr "Ancora nessuna notizia."
-
-#: includes/class-cluvo-shortcodes.php:241
-msgid "Weiterlesen"
-msgstr "Continua a leggere"
-
-#: includes/class-cluvo-shortcodes.php:265
-msgid "Artikel nicht gefunden."
-msgstr "Articolo non trovato."
-
-#: includes/class-cluvo-shortcodes.php:266
-#: includes/class-cluvo-shortcodes.php:275
+#: includes/class-cluvo-shortcodes.php:232
+#: includes/class-cluvo-shortcodes.php:243
+#: includes/class-cluvo-shortcodes.php:394
+#: includes/class-cluvo-shortcodes.php:403
 msgid "Zurück zur Übersicht"
 msgstr "Torna alla panoramica"
 
-#: includes/class-cluvo-shortcodes.php:302
+#: includes/class-cluvo-shortcodes.php:266
+msgid "Weitere Daten"
+msgstr "Altre date"
+
+#: includes/class-cluvo-shortcodes.php:334
+msgid "News konnten nicht geladen werden."
+msgstr "Non è stato possibile caricare le notizie."
+
+#: includes/class-cluvo-shortcodes.php:339
+msgid "Noch keine News vorhanden."
+msgstr "Ancora nessuna notizia."
+
+#: includes/class-cluvo-shortcodes.php:369
+msgid "Weiterlesen"
+msgstr "Continua a leggere"
+
+#: includes/class-cluvo-shortcodes.php:393
+msgid "Artikel nicht gefunden."
+msgstr "Articolo non trovato."
+
+#: includes/class-cluvo-shortcodes.php:430
 msgid "Weitere News"
 msgstr "Altre notizie"
 
-#: includes/class-cluvo-shortcodes.php:305
+#: includes/class-cluvo-shortcodes.php:433
 msgid "Neuere"
 msgstr "Più recenti"
 
 #. translators: 1: current page, 2: number of pages
-#: includes/class-cluvo-shortcodes.php:309
+#: includes/class-cluvo-shortcodes.php:437
 #, php-format
 msgid "Seite %1$d von %2$d"
 msgstr "Pagina %1$d di %2$d"
 
-#: includes/class-cluvo-shortcodes.php:312
+#: includes/class-cluvo-shortcodes.php:440
 msgid "Ältere"
 msgstr "Meno recenti"
 
 #. translators: 1: start, 2: end (dates or times)
-#: includes/class-cluvo-shortcodes.php:336
+#: includes/class-cluvo-shortcodes.php:464
 #, php-format
 msgid "%1$s – %2$s"
 msgstr "%1$s – %2$s"
 
 #. translators: 1: date, 2: time
-#: includes/class-cluvo-shortcodes.php:338
+#: includes/class-cluvo-shortcodes.php:466
 #, php-format
 msgid "%1$s, %2$s"
 msgstr "%1$s, %2$s"
 
-#: includes/class-cluvo-shortcodes.php:342
+#: includes/class-cluvo-shortcodes.php:470
 msgid "Ganztägig"
 msgstr "Tutto il giorno"
 
 #. translators: %d: HTTP status code
 #: includes/class-cluvo-updater.php:118
-#, fuzzy, php-format
+#, php-format
 msgid "Der Update-Server antwortete mit Status %d."
-msgstr "L’API di Cluvo ha risposto con lo stato %d."
+msgstr "Il server degli aggiornamenti ha risposto con lo stato %d."
 
 #: includes/class-cluvo-updater.php:122
 msgid "Der Update-Server lieferte keine gültigen Angaben."

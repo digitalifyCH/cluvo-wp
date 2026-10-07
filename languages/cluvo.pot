@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cluvo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 13:54+0200\n"
+"POT-Creation-Date: 2026-10-07 11:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,47 +34,47 @@ msgid ""
 "angeben."
 msgstr ""
 
-#: includes/class-cluvo-client.php:146 includes/class-cluvo-client.php:245
+#: includes/class-cluvo-client.php:154 includes/class-cluvo-client.php:253
 msgid "Unbekannter oder unvollständiger Verein."
 msgstr ""
 
 #. translators: %s: technical error message
-#: includes/class-cluvo-client.php:177
+#: includes/class-cluvo-client.php:185
 #, php-format
 msgid "Cluvo ist nicht erreichbar (%s)."
 msgstr ""
 
-#: includes/class-cluvo-client.php:190
+#: includes/class-cluvo-client.php:198
 msgid "Der API-Key ist ungültig oder wurde in Cluvo widerrufen."
 msgstr ""
 
-#: includes/class-cluvo-client.php:192
+#: includes/class-cluvo-client.php:200
 msgid "Kein Zugriff auf die Cluvo-API."
 msgstr ""
 
-#: includes/class-cluvo-client.php:194
+#: includes/class-cluvo-client.php:202
 msgid ""
 "Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in "
 "Cluvo aktiv und öffentlich?"
 msgstr ""
 
-#: includes/class-cluvo-client.php:196
+#: includes/class-cluvo-client.php:204
 msgid "Zu viele Anfragen an Cluvo. Bitte versuche es gleich nochmals."
 msgstr ""
 
 #. translators: %d: HTTP status code
-#: includes/class-cluvo-client.php:199
+#: includes/class-cluvo-client.php:207
 #, php-format
 msgid "Cluvo meldet einen Serverfehler (Status %d)."
 msgstr ""
 
 #. translators: %d: HTTP status code
-#: includes/class-cluvo-client.php:202
+#: includes/class-cluvo-client.php:210
 #, php-format
 msgid "Cluvo-API antwortete mit Status %d."
 msgstr ""
 
-#: includes/class-cluvo-client.php:327
+#: includes/class-cluvo-client.php:335
 msgid "Cluvo ist noch nicht konfiguriert."
 msgstr ""
 
@@ -365,7 +365,8 @@ msgstr ""
 msgid ""
 "<code>limit</code> – Anzahl Termine (Serien einzeln gezählt, Standard 10) · "
 "<code>category</code> – ID der Kategorie · <code>from</code>, <code>to</"
-"code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate)"
+"code> – Zeitraum als JJJJ-MM-TT (Standard: ab heute für 12 Monate) · "
+"<code>layout=\"cards\"</code> – Karten mit Titelbild statt Liste"
 msgstr ""
 
 #: includes/class-cluvo-settings.php:256
@@ -505,66 +506,76 @@ msgstr ""
 msgid "Das Formular konnte nicht geladen werden."
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:118
+#: includes/class-cluvo-shortcodes.php:129
 msgid "Veranstaltungen konnten nicht geladen werden."
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:123
+#: includes/class-cluvo-shortcodes.php:134
 msgid "Aktuell sind keine Veranstaltungen geplant."
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:206
-msgid "News konnten nicht geladen werden."
+#: includes/class-cluvo-shortcodes.php:231
+msgid "Veranstaltung nicht gefunden."
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:211
-msgid "Noch keine News vorhanden."
-msgstr ""
-
-#: includes/class-cluvo-shortcodes.php:241
-msgid "Weiterlesen"
-msgstr ""
-
-#: includes/class-cluvo-shortcodes.php:265
-msgid "Artikel nicht gefunden."
-msgstr ""
-
-#: includes/class-cluvo-shortcodes.php:266
-#: includes/class-cluvo-shortcodes.php:275
+#: includes/class-cluvo-shortcodes.php:232
+#: includes/class-cluvo-shortcodes.php:243
+#: includes/class-cluvo-shortcodes.php:394
+#: includes/class-cluvo-shortcodes.php:403
 msgid "Zurück zur Übersicht"
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:302
+#: includes/class-cluvo-shortcodes.php:266
+msgid "Weitere Daten"
+msgstr ""
+
+#: includes/class-cluvo-shortcodes.php:334
+msgid "News konnten nicht geladen werden."
+msgstr ""
+
+#: includes/class-cluvo-shortcodes.php:339
+msgid "Noch keine News vorhanden."
+msgstr ""
+
+#: includes/class-cluvo-shortcodes.php:369
+msgid "Weiterlesen"
+msgstr ""
+
+#: includes/class-cluvo-shortcodes.php:393
+msgid "Artikel nicht gefunden."
+msgstr ""
+
+#: includes/class-cluvo-shortcodes.php:430
 msgid "Weitere News"
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:305
+#: includes/class-cluvo-shortcodes.php:433
 msgid "Neuere"
 msgstr ""
 
 #. translators: 1: current page, 2: number of pages
-#: includes/class-cluvo-shortcodes.php:309
+#: includes/class-cluvo-shortcodes.php:437
 #, php-format
 msgid "Seite %1$d von %2$d"
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:312
+#: includes/class-cluvo-shortcodes.php:440
 msgid "Ältere"
 msgstr ""
 
 #. translators: 1: start, 2: end (dates or times)
-#: includes/class-cluvo-shortcodes.php:336
+#: includes/class-cluvo-shortcodes.php:464
 #, php-format
 msgid "%1$s – %2$s"
 msgstr ""
 
 #. translators: 1: date, 2: time
-#: includes/class-cluvo-shortcodes.php:338
+#: includes/class-cluvo-shortcodes.php:466
 #, php-format
 msgid "%1$s, %2$s"
 msgstr ""
 
-#: includes/class-cluvo-shortcodes.php:342
+#: includes/class-cluvo-shortcodes.php:470
 msgid "Ganztägig"
 msgstr ""
 

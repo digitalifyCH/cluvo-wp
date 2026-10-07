@@ -4,7 +4,7 @@ Tags: cluvo, verein, formulare, veranstaltungen, news
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,8 +29,10 @@ das Attribut entfallen.
 
 * `[cluvo_form account="1" slug="mein-formular"]` – bettet ein Formular ein (native Felder,
   inkl. fixer Mitgliedschaften, freiem Beitrag und Zusatzfeldern).
-* `[cluvo_events account="1" limit="10" category="" from="2026-01-01" to=""]` – kommende
-  Veranstaltungen; Serientermine erscheinen einzeln. `per_page` ist ein Alias für `limit`.
+* `[cluvo_events account="1" limit="10" category="" from="2026-01-01" to="" layout="list"]` – kommende
+  Veranstaltungen mit Titelbild und eigener Detailansicht (Inhalt aus dem Cluvo-Editor, weitere Daten einer
+  Serie); Serientermine erscheinen einzeln. `layout="cards"` zeigt Karten statt einer Liste, `per_page` ist ein
+  Alias für `limit`.
 * `[cluvo_news account="1" limit="6" category="" pagination="1"]` – aktuelle News mit Bild
   und Einzelansicht; `pagination="1"` blendet Links zu älteren News ein.
 
@@ -64,6 +66,13 @@ von Cluvo ein.
 3. Shortcodes auf einer Seite oder in einem Beitrag verwenden.
 
 == Changelog ==
+
+= 0.4.0 =
+* Veranstaltungen: Jeder Termin hat eine Detailansicht auf derselben Seite – mit Titelbild, Inhalt aus dem Cluvo-Editor (Text, Bilder, Galerien, Knöpfe) und bei Serien den nächsten Daten.
+* Veranstaltungen: Titelbild in der Liste; neue Darstellung `layout="cards"` mit Karten wie bei den News.
+* News und Veranstaltungen: Bilder mit Legende und Galerien aus dem Cluvo-Editor werden passend dargestellt.
+* Übersetzungen ergänzt; zwei bisher fehlende Meldungen des Update-Servers sind jetzt übersetzt.
+* Braucht Cluvo ab Oktober 2026 (Endpunkt `events/{id}`); ältere Termine ohne Inhalt zeigen ihre Beschreibung.
 
 = 0.3.0 =
 * Updates kommen neu von wp.cluvo.ch statt von GitHub. Der Header «Update URI» sorgt dafür, dass nur Cluvo selbst Updates für dieses Plugin liefert.

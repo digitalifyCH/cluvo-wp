@@ -24,7 +24,7 @@ die **Plugin-API** von Cluvo (`https://app.cluvo.ch/api/v1`), Gegenstück im Hau
 - **Ein API-Key pro Verein** (Multi-Account, Dachverbände), erstellt in Cluvo unter Einstellungen → Integration. Konten
   haben eine stabile ID (`next_id`), im Shortcode `account="<id>"`; bei nur einem Konto darf das Attribut fehlen.
   Gespeicherte Keys werden nie mehr ausgegeben – leeres Feld beim Speichern heisst «Key behalten».
-- Endpunkte: `forms`, `forms/{slug}`, `forms/{slug}/submit`, `events`, `news`, `news/{slug}`. Sprache über
+- Endpunkte: `forms`, `forms/{slug}`, `forms/{slug}/submit`, `events`, `events/{id}`, `news`, `news/{slug}`. Sprache über
   `Accept-Language` aus der WordPress-Locale.
 - **Cluvo Basic sperrt die Plugin-API** (403 mit Meldung) – `Cluvo_Client::response_error()` reicht die Meldung durch.
 - Lokal gegen ddev: in `wp-config.php` `define( 'CLUVO_API_BASE_URL', 'https://app.cluvo.ddev.site/api/v1' );`, das
@@ -52,9 +52,13 @@ Validiert wird massgeblich in Cluvo; Fehler kommen als 422 und werden pro Feld a
 
 ## Veranstaltungen und News
 
-`[cluvo_events limit from to category]` (Serientermine einzeln gezählt, Standard ab heute 12 Monate, `per_page` = Alias),
-`[cluvo_news limit category pagination]`. Die Einzelansicht eines Artikels und die Seiten laufen über die Query-Parameter
-`cluvo_article` und `cluvo_page` auf derselben WordPress-Seite. Fehlermeldungen sehen Besucher neutral, Administratoren
+`[cluvo_events limit from to category layout]` (Serientermine einzeln gezählt, Standard ab heute 12 Monate, `per_page` =
+Alias, `layout="cards"` für Karten), `[cluvo_news limit category pagination]`. Die Einzelansichten und die Seiten laufen über
+Query-Parameter auf derselben WordPress-Seite: `cluvo_article`, `cluvo_page` bzw. `cluvo_event`, `cluvo_date` (Vorkommen einer
+Serie) und `cluvo_account` (nur das Konto, für das der Link gemacht wurde, zeigt die Einzelansicht – mehrere Vereine auf einer
+Seite). Termine kommen aus `events` (Liste) und `events/{id}?datum=` (Einzeltermin mit `content`, `image_url`, `upcoming`);
+`description` ist reiner Text, `content` HTML aus dem Cluvo-Editor und läuft durch `wp_kses_post()`. Vertrag und Entscheide im
+Hauptprojekt: `docs/veranstaltungen.md` (V-12). Fehlermeldungen sehen Besucher neutral, Administratoren
 mit Ursache.
 
 ## Updates und Release

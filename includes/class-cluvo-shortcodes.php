@@ -87,6 +87,7 @@ class Cluvo_Shortcodes {
 				'category' => '',
 				'from'     => '',
 				'to'       => '',
+				'layout'   => 'list',
 				'account'  => '',
 			),
 			$atts,
@@ -100,15 +101,25 @@ class Cluvo_Shortcodes {
 			return $this->notice( $account->get_error_message() );
 		}
 
+		// Detail view when ?cluvo_event=<id> is present – only for the account the link was made for.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$single      = isset( $_GET['cluvo_event'] ) ? absint( $_GET['cluvo_event'] ) : 0;
+		$for_account = isset( $_GET['cluvo_account'] ) ? absint( $_GET['cluvo_account'] ) : 0;
+		$date        = isset( $_GET['cluvo_date'] ) ? self::iso_date( sanitize_text_field( wp_unslash( $_GET['cluvo_date'] ) ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		if ( $single && ( ! $for_account || (int) $account['id'] === $for_account ) ) {
+			return $this->event_single( $single, $date, $account['id'] );
+		}
+
 		$limit  = '' !== $atts['per_page'] ? $atts['per_page'] : $atts['limit'];
 		$params = array( 'limit' => min( 500, max( 1, absint( $limit ) ) ) );
 		if ( absint( $atts['category'] ) ) {
 			$params['category'] = absint( $atts['category'] );
 		}
 		foreach ( array( 'from', 'to' ) as $key ) {
-			$date = self::iso_date( $atts[ $key ] );
-			if ( $date ) {
-				$params[ $key ] = $date;
+			$from_to = self::iso_date( $atts[ $key ] );
+			if ( $from_to ) {
+				$params[ $key ] = $from_to;
 			}
 		}
 
@@ -123,11 +134,51 @@ class Cluvo_Shortcodes {
 			return '<div class="cluvo cluvo-empty">' . esc_html__( 'Aktuell sind keine Veranstaltungen geplant.', 'cluvo' ) . '</div>';
 		}
 
+		$base  = remove_query_arg( array( 'cluvo_event', 'cluvo_date', 'cluvo_account' ) );
+		$cards = 'cards' === strtolower( trim( (string) $atts['layout'] ) );
+
 		ob_start();
-		echo '<ul class="cluvo cluvo-events">';
+		echo $cards ? '<div class="cluvo cluvo-events cluvo-events--cards">' : '<ul class="cluvo cluvo-events">';
 		foreach ( $events as $event ) {
 			$start    = isset( $event['start_date'] ) ? self::iso_date( $event['start_date'] ) : '';
 			$category = isset( $event['category'] ) && is_array( $event['category'] ) ? $event['category'] : array();
+			$title    = isset( $event['title'] ) ? $event['title'] : '';
+			$link     = self::event_link( $event, $base, $account['id'] );
+			$image    = self::image_url( $event );
+
+			if ( $cards ) {
+				?>
+				<article class="cluvo-event-card"<?php echo self::color_style( $category ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>>
+					<a class="cluvo-event-card__image" href="<?php echo esc_url( $link ); ?>" tabindex="-1" aria-hidden="true">
+						<?php if ( $image ) : ?>
+							<img src="<?php echo esc_url( $image ); ?>" alt="" loading="lazy" decoding="async" />
+						<?php endif; ?>
+						<?php if ( $start ) : ?>
+							<span class="cluvo-event__badge">
+								<span class="cluvo-event__day"><?php echo esc_html( self::format_date( $start, 'j' ) ); ?></span>
+								<span class="cluvo-event__month"><?php echo esc_html( self::format_date( $start, 'M' ) ); ?></span>
+							</span>
+						<?php endif; ?>
+					</a>
+					<div class="cluvo-event-card__content">
+						<?php if ( ! empty( $category['name'] ) ) : ?>
+							<span class="cluvo-badge"><?php echo esc_html( $category['name'] ); ?></span>
+						<?php endif; ?>
+						<h3 class="cluvo-event__title"><a href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $title ); ?></a></h3>
+						<?php if ( $start ) : ?>
+							<p class="cluvo-event__when"><?php echo self::event_when( $event ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?></p>
+						<?php endif; ?>
+						<?php if ( ! empty( $event['location'] ) ) : ?>
+							<p class="cluvo-event__meta"><span class="cluvo-event__location"><?php echo esc_html( $event['location'] ); ?></span></p>
+						<?php endif; ?>
+						<?php if ( ! empty( $event['description'] ) ) : ?>
+							<p class="cluvo-event__desc"><?php echo esc_html( wp_trim_words( $event['description'], 20 ) ); ?></p>
+						<?php endif; ?>
+					</div>
+				</article>
+				<?php
+				continue;
+			}
 			?>
 			<li class="cluvo-event"<?php echo self::color_style( $category ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>>
 				<?php if ( $start ) : ?>
@@ -137,7 +188,7 @@ class Cluvo_Shortcodes {
 					</div>
 				<?php endif; ?>
 				<div class="cluvo-event__body">
-					<h3 class="cluvo-event__title"><?php echo esc_html( isset( $event['title'] ) ? $event['title'] : '' ); ?></h3>
+					<h3 class="cluvo-event__title"><a href="<?php echo esc_url( $link ); ?>"><?php echo esc_html( $title ); ?></a></h3>
 					<?php if ( $start ) : ?>
 						<p class="cluvo-event__when"><?php echo self::event_when( $event ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?></p>
 					<?php endif; ?>
@@ -155,11 +206,88 @@ class Cluvo_Shortcodes {
 						<p class="cluvo-event__desc"><?php echo esc_html( wp_trim_words( $event['description'], 30 ) ); ?></p>
 					<?php endif; ?>
 				</div>
+				<?php if ( $image ) : ?>
+					<a class="cluvo-event__thumb" href="<?php echo esc_url( $link ); ?>" tabindex="-1" aria-hidden="true">
+						<img src="<?php echo esc_url( $image ); ?>" alt="" loading="lazy" decoding="async" />
+					</a>
+				<?php endif; ?>
 			</li>
 			<?php
 		}
-		echo '</ul>';
+		echo $cards ? '</div>' : '</ul>';
 		return ob_get_clean();
+	}
+
+	/**
+	 * One event on the same WordPress page: title image, date, place, content from the Cluvo editor and – for a series –
+	 * the next dates. Older events without editor content show their plain description.
+	 */
+	private function event_single( $id, $date, $account_id ) {
+		$back     = remove_query_arg( array( 'cluvo_event', 'cluvo_date', 'cluvo_account' ) );
+		$response = $this->client->get_event( $id, $date, $account_id );
+
+		if ( is_wp_error( $response ) || empty( $response['data'] ) || ! is_array( $response['data'] ) ) {
+			$error = is_wp_error( $response ) && 404 !== Cluvo_Client::error_status( $response ) ? $response : null;
+			return $this->notice( __( 'Veranstaltung nicht gefunden.', 'cluvo' ), $error )
+				. '<p class="cluvo cluvo-article__back"><a href="' . esc_url( $back ) . '"><span aria-hidden="true">← </span>' . esc_html__( 'Zurück zur Übersicht', 'cluvo' ) . '</a></p>';
+		}
+
+		$event    = $response['data'];
+		$image    = self::image_url( $event );
+		$category = isset( $event['category'] ) && is_array( $event['category'] ) ? $event['category'] : array();
+		$upcoming = isset( $event['upcoming'] ) && is_array( $event['upcoming'] ) ? array_filter( array_map( array( __CLASS__, 'iso_date' ), $event['upcoming'] ) ) : array();
+
+		ob_start();
+		?>
+		<article class="cluvo cluvo-article cluvo-event-detail"<?php echo self::color_style( $category ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>>
+			<p class="cluvo-article__back"><a href="<?php echo esc_url( $back ); ?>"><span aria-hidden="true">← </span><?php esc_html_e( 'Zurück zur Übersicht', 'cluvo' ); ?></a></p>
+			<?php if ( ! empty( $category['name'] ) ) : ?>
+				<p class="cluvo-article__meta"><span class="cluvo-badge"><?php echo esc_html( $category['name'] ); ?></span></p>
+			<?php endif; ?>
+			<h2 class="cluvo-article__title"><?php echo esc_html( isset( $event['title'] ) ? $event['title'] : '' ); ?></h2>
+			<div class="cluvo-event-detail__facts">
+				<?php if ( ! empty( $event['start_date'] ) ) : ?>
+					<p class="cluvo-event__when"><?php echo self::event_when( $event ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?></p>
+				<?php endif; ?>
+				<?php if ( ! empty( $event['location'] ) ) : ?>
+					<p class="cluvo-event__location"><?php echo esc_html( $event['location'] ); ?></p>
+				<?php endif; ?>
+			</div>
+			<?php if ( $image ) : ?>
+				<img class="cluvo-article__image" src="<?php echo esc_url( $image ); ?>" alt="" decoding="async" />
+			<?php endif; ?>
+			<?php if ( ! empty( $event['content'] ) ) : ?>
+				<div class="cluvo-article__content"><?php echo wp_kses_post( $event['content'] ); ?></div>
+			<?php elseif ( ! empty( $event['description'] ) ) : ?>
+				<div class="cluvo-article__content"><?php echo wp_kses_post( wpautop( esc_html( $event['description'] ) ) ); ?></div>
+			<?php endif; ?>
+			<?php if ( $upcoming ) : ?>
+				<div class="cluvo-event-detail__dates">
+					<h3><?php esc_html_e( 'Weitere Daten', 'cluvo' ); ?></h3>
+					<ul>
+						<?php foreach ( $upcoming as $day ) : ?>
+							<li><a href="<?php echo esc_url( add_query_arg( 'cluvo_date', $day ) ); ?>"><?php echo esc_html( self::format_date( $day, get_option( 'date_format' ) ) ); ?></a></li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			<?php endif; ?>
+		</article>
+		<?php
+		return ob_get_clean();
+	}
+
+	/** Link to the detail view on this page – with date (series) and account (several clubs on one page). */
+	private static function event_link( $event, $base, $account_id ) {
+		$args = array(
+			'cluvo_event'   => isset( $event['id'] ) ? absint( $event['id'] ) : 0,
+			'cluvo_account' => absint( $account_id ),
+		);
+		$date = isset( $event['start_date'] ) ? self::iso_date( $event['start_date'] ) : '';
+		if ( $date ) {
+			$args['cluvo_date'] = $date;
+		}
+
+		return add_query_arg( $args, $base );
 	}
 
 	public function news( $atts ) {
