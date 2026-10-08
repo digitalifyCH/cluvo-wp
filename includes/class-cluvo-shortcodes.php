@@ -253,6 +253,7 @@ class Cluvo_Shortcodes {
 					<p class="cluvo-event__location"><?php echo esc_html( $event['location'] ); ?></p>
 				<?php endif; ?>
 			</div>
+			<?php echo self::registration_box( $event ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside. ?>
 			<?php if ( $image ) : ?>
 				<img class="cluvo-article__image" src="<?php echo esc_url( $image ); ?>" alt="" decoding="async" />
 			<?php endif; ?>
@@ -272,6 +273,58 @@ class Cluvo_Shortcodes {
 				</div>
 			<?php endif; ?>
 		</article>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * State of the registration with a link to the form on the club website (Cluvo: docs/anmeldungen.md).
+	 * The form itself stays on the club website – it sends the confirmation and handles the waitlist.
+	 */
+	private static function registration_box( $event ) {
+		$registration = isset( $event['registration'] ) && is_array( $event['registration'] ) ? $event['registration'] : null;
+
+		if ( ! $registration || empty( $registration['enabled'] ) ) {
+			return '';
+		}
+
+		$open      = ! empty( $registration['open'] );
+		$available = isset( $registration['available'] ) ? $registration['available'] : null;
+		$full      = null !== $available && 0 === (int) $available;
+		$members   = isset( $registration['audience'] ) && 'members' === $registration['audience'];
+
+		$facts   = array();
+		$facts[] = $open
+			? ( $full ? __( 'Ausgebucht – Warteliste offen', 'cluvo' ) : __( 'Anmeldung offen', 'cluvo' ) )
+			: __( 'Anmeldung geschlossen', 'cluvo' );
+		if ( $open && ! $full && null !== $available ) {
+			/* translators: %d: number of free places */
+			$facts[] = sprintf( _n( 'Noch %d Platz frei', 'Noch %d Plätze frei', (int) $available, 'cluvo' ), (int) $available );
+		}
+		if ( ! empty( $registration['price'] ) ) {
+			/* translators: %s: amount */
+			$facts[] = sprintf( __( 'CHF %s pro Person', 'cluvo' ), number_format_i18n( (float) $registration['price'], 2 ) );
+		}
+		if ( $open && ! empty( $registration['closes_on'] ) ) {
+			$closes = self::iso_date( $registration['closes_on'] );
+			if ( $closes ) {
+				/* translators: %s: date */
+				$facts[] = sprintf( __( 'Anmeldeschluss %s', 'cluvo' ), self::format_date( $closes, get_option( 'date_format' ) ) );
+			}
+		}
+
+		$url = ! empty( $event['url'] ) ? $event['url'] . '#anmeldung' : '';
+
+		ob_start();
+		?>
+		<div class="cluvo-event-detail__registration">
+			<p class="cluvo-event-detail__registration-facts"><?php echo esc_html( implode( ' · ', $facts ) ); ?></p>
+			<?php if ( $open && $members ) : ?>
+				<p class="cluvo-event-detail__registration-hint"><?php esc_html_e( 'Mitglieder melden sich in der Cluvo-App an.', 'cluvo' ); ?></p>
+			<?php elseif ( $open && $url ) : ?>
+				<a class="cluvo-button" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $full ? __( 'Auf die Warteliste', 'cluvo' ) : __( 'Zur Anmeldung', 'cluvo' ) ); ?></a>
+			<?php endif; ?>
+		</div>
 		<?php
 		return ob_get_clean();
 	}

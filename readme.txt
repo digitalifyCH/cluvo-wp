@@ -72,6 +72,7 @@ von Cluvo ein.
 * Veranstaltungen: Titelbild in der Liste; neue Darstellung `layout="cards"` mit Karten wie bei den News.
 * News und Veranstaltungen: Bilder mit Legende und Galerien aus dem Cluvo-Editor werden passend dargestellt.
 * Übersetzungen ergänzt; zwei bisher fehlende Meldungen des Update-Servers sind jetzt übersetzt.
+* Veranstaltungen mit Anmeldung zeigen in der Detailansicht freie Plätze, Kosten und Anmeldeschluss und führen zum Formular auf der Vereinswebseite.
 * Braucht Cluvo ab Oktober 2026 (Endpunkt `events/{id}`); ältere Termine ohne Inhalt zeigen ihre Beschreibung.
 
 = 0.3.0 =

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cluvo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-07 11:07+0200\n"
+"POT-Creation-Date: 2026-10-08 09:01+0200\n"
 "PO-Revision-Date: 2026-09-17 00:00+0200\n"
 "Last-Translator: Cluvo\n"
 "Language-Team: Cluvo\n"
@@ -471,7 +471,9 @@ msgstr "Cluvo è aggiornato."
 msgid ""
 "Der Update-Server von Cluvo ist gerade nicht erreichbar. Bitte versuche es "
 "später erneut."
-msgstr "Il server degli aggiornamenti di Cluvo non è raggiungibile al momento. Riprova più tardi."
+msgstr ""
+"Il server degli aggiornamenti di Cluvo non è raggiungibile al momento. "
+"Riprova più tardi."
 
 #. translators: %s: last four characters of the stored API key
 #: includes/class-cluvo-settings.php:380
@@ -541,62 +543,106 @@ msgstr "Evento non trovato."
 
 #: includes/class-cluvo-shortcodes.php:232
 #: includes/class-cluvo-shortcodes.php:243
-#: includes/class-cluvo-shortcodes.php:394
-#: includes/class-cluvo-shortcodes.php:403
+#: includes/class-cluvo-shortcodes.php:447
+#: includes/class-cluvo-shortcodes.php:456
 msgid "Zurück zur Übersicht"
 msgstr "Torna alla panoramica"
 
-#: includes/class-cluvo-shortcodes.php:266
+#: includes/class-cluvo-shortcodes.php:267
 msgid "Weitere Daten"
 msgstr "Altre date"
 
-#: includes/class-cluvo-shortcodes.php:334
+#: includes/class-cluvo-shortcodes.php:298
+msgid "Anmeldung offen"
+msgstr "Iscrizioni aperte"
+
+#: includes/class-cluvo-shortcodes.php:298
+msgid "Ausgebucht – Warteliste offen"
+msgstr "Al completo – lista d’attesa aperta"
+
+#: includes/class-cluvo-shortcodes.php:299
+msgid "Anmeldung geschlossen"
+msgstr "Iscrizioni chiuse"
+
+#. translators: %d: number of free places
+#: includes/class-cluvo-shortcodes.php:302
+#, php-format
+msgid "Noch %d Platz frei"
+msgid_plural "Noch %d Plätze frei"
+msgstr[0] "Ancora %d posto libero"
+msgstr[1] "Ancora %d posti liberi"
+
+#. translators: %s: amount
+#: includes/class-cluvo-shortcodes.php:306
+#, php-format
+msgid "CHF %s pro Person"
+msgstr "CHF %s a persona"
+
+#. translators: %s: date
+#: includes/class-cluvo-shortcodes.php:312
+#, php-format
+msgid "Anmeldeschluss %s"
+msgstr "Termine d’iscrizione %s"
+
+#: includes/class-cluvo-shortcodes.php:323
+msgid "Mitglieder melden sich in der Cluvo-App an."
+msgstr "I soci si iscrivono nell’app Cluvo."
+
+#: includes/class-cluvo-shortcodes.php:325
+msgid "Auf die Warteliste"
+msgstr "In lista d’attesa"
+
+#: includes/class-cluvo-shortcodes.php:325
+msgid "Zur Anmeldung"
+msgstr "Iscriviti"
+
+#: includes/class-cluvo-shortcodes.php:387
 msgid "News konnten nicht geladen werden."
 msgstr "Non è stato possibile caricare le notizie."
 
-#: includes/class-cluvo-shortcodes.php:339
+#: includes/class-cluvo-shortcodes.php:392
 msgid "Noch keine News vorhanden."
 msgstr "Ancora nessuna notizia."
 
-#: includes/class-cluvo-shortcodes.php:369
+#: includes/class-cluvo-shortcodes.php:422
 msgid "Weiterlesen"
 msgstr "Continua a leggere"
 
-#: includes/class-cluvo-shortcodes.php:393
+#: includes/class-cluvo-shortcodes.php:446
 msgid "Artikel nicht gefunden."
 msgstr "Articolo non trovato."
 
-#: includes/class-cluvo-shortcodes.php:430
+#: includes/class-cluvo-shortcodes.php:483
 msgid "Weitere News"
 msgstr "Altre notizie"
 
-#: includes/class-cluvo-shortcodes.php:433
+#: includes/class-cluvo-shortcodes.php:486
 msgid "Neuere"
 msgstr "Più recenti"
 
 #. translators: 1: current page, 2: number of pages
-#: includes/class-cluvo-shortcodes.php:437
+#: includes/class-cluvo-shortcodes.php:490
 #, php-format
 msgid "Seite %1$d von %2$d"
 msgstr "Pagina %1$d di %2$d"
 
-#: includes/class-cluvo-shortcodes.php:440
+#: includes/class-cluvo-shortcodes.php:493
 msgid "Ältere"
 msgstr "Meno recenti"
 
 #. translators: 1: start, 2: end (dates or times)
-#: includes/class-cluvo-shortcodes.php:464
+#: includes/class-cluvo-shortcodes.php:517
 #, php-format
 msgid "%1$s – %2$s"
 msgstr "%1$s – %2$s"
 
 #. translators: 1: date, 2: time
-#: includes/class-cluvo-shortcodes.php:466
+#: includes/class-cluvo-shortcodes.php:519
 #, php-format
 msgid "%1$s, %2$s"
 msgstr "%1$s, %2$s"
 
-#: includes/class-cluvo-shortcodes.php:470
+#: includes/class-cluvo-shortcodes.php:523
 msgid "Ganztägig"
 msgstr "Tutto il giorno"
 

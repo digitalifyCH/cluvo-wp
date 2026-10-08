@@ -57,7 +57,9 @@ Alias, `layout="cards"` für Karten), `[cluvo_news limit category pagination]`. 
 Query-Parameter auf derselben WordPress-Seite: `cluvo_article`, `cluvo_page` bzw. `cluvo_event`, `cluvo_date` (Vorkommen einer
 Serie) und `cluvo_account` (nur das Konto, für das der Link gemacht wurde, zeigt die Einzelansicht – mehrere Vereine auf einer
 Seite). Termine kommen aus `events` (Liste) und `events/{id}?datum=` (Einzeltermin mit `content`, `image_url`, `upcoming`);
-`description` ist reiner Text, `content` HTML aus dem Cluvo-Editor und läuft durch `wp_kses_post()`. Vertrag und Entscheide im
+`description` ist reiner Text, `content` HTML aus dem Cluvo-Editor und läuft durch `wp_kses_post()`. Mit Anmeldung liefert
+`events/{id}` zusätzlich `registration` (Stand); das Plugin zeigt ihn und verlinkt das Formular auf der Vereinswebseite
+(`url#anmeldung`) – angemeldet wird dort, nicht über das Plugin (Cluvo: `docs/anmeldungen.md`). Vertrag und Entscheide im
 Hauptprojekt: `docs/veranstaltungen.md` (V-12). Fehlermeldungen sehen Besucher neutral, Administratoren
 mit Ursache.
 

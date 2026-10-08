@@ -1099,3 +1099,30 @@
 	object-fit: cover;
 	border-radius: 6px;
 }
+
+/* Anmeldung zu einem Anlass – Stand und Link zum Formular auf der Vereinswebseite */
+.cluvo .cluvo-event-detail__registration {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1.5rem;
+	margin: 0 0 1.5rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--cluvo-border, rgba(0, 0, 0, 0.12));
+	border-radius: var(--cluvo-radius, 0.75rem);
+}
+
+.cluvo .cluvo-event-detail__registration-facts,
+.cluvo .cluvo-event-detail__registration-hint {
+	margin: 0;
+	font-size: 1rem;
+}
+
+.cluvo .cluvo-event-detail__registration-hint {
+	opacity: 0.75;
+}
+
+.cluvo .cluvo-event-detail__registration .cluvo-button {
+	text-decoration: none;
+}
