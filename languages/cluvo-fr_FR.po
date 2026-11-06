@@ -1,12 +1,12 @@
-# Cluvo WordPress plugin – French translation.
+# CleverVerein WordPress plugin – French translation.
 msgid ""
 msgstr ""
-"Project-Id-Version: Cluvo\n"
+"Project-Id-Version: CleverVerein\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 09:01+0200\n"
-"PO-Revision-Date: 2026-09-17 00:00+0200\n"
-"Last-Translator: Cluvo\n"
-"Language-Team: Cluvo\n"
+"POT-Creation-Date: 2026-11-04 10:43+0100\n"
+"PO-Revision-Date: 2026-11-04 10:43+0100\n"
+"Last-Translator: CleverVerein\n"
+"Language-Team: CleverVerein\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,8 +14,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: includes/class-cluvo-client.php:91
-msgid "Es ist noch kein Cluvo-Verein hinterlegt."
-msgstr "Aucune association Cluvo n’est encore configurée."
+msgid "Es ist noch kein Verein aus CleverVerein hinterlegt."
+msgstr "Aucune association CleverVerein n’est encore configurée."
 
 #. translators: %s: account id from the shortcode
 #: includes/class-cluvo-client.php:98
@@ -38,44 +38,44 @@ msgstr "Association inconnue ou incomplète."
 #. translators: %s: technical error message
 #: includes/class-cluvo-client.php:185
 #, php-format
-msgid "Cluvo ist nicht erreichbar (%s)."
-msgstr "Cluvo n’est pas joignable (%s)."
+msgid "CleverVerein ist nicht erreichbar (%s)."
+msgstr "CleverVerein n’est pas joignable (%s)."
 
 #: includes/class-cluvo-client.php:198
-msgid "Der API-Key ist ungültig oder wurde in Cluvo widerrufen."
-msgstr "La clé API n’est pas valide ou a été révoquée dans Cluvo."
+msgid "Der API-Key ist ungültig oder wurde in CleverVerein widerrufen."
+msgstr "La clé API n’est pas valide ou a été révoquée dans CleverVerein."
 
 #: includes/class-cluvo-client.php:200
-msgid "Kein Zugriff auf die Cluvo-API."
-msgstr "Pas d’accès à l’API Cluvo."
+msgid "Kein Zugriff auf die CleverVerein-API."
+msgstr "Pas d’accès à l’API CleverVerein."
 
 #: includes/class-cluvo-client.php:202
 msgid ""
 "Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in "
-"Cluvo aktiv und öffentlich?"
+"CleverVerein aktiv und öffentlich?"
 msgstr ""
 "Introuvable. Le slug est-il correct et le formulaire ou l’article est-il "
-"actif et public dans Cluvo ?"
+"actif et public dans CleverVerein ?"
 
 #: includes/class-cluvo-client.php:204
-msgid "Zu viele Anfragen an Cluvo. Bitte versuche es gleich nochmals."
-msgstr "Trop de requêtes vers Cluvo. Réessaie dans un instant."
+msgid "Zu viele Anfragen an CleverVerein. Bitte versuche es gleich nochmals."
+msgstr "Trop de requêtes vers CleverVerein. Réessaie dans un instant."
 
 #. translators: %d: HTTP status code
 #: includes/class-cluvo-client.php:207
 #, php-format
-msgid "Cluvo meldet einen Serverfehler (Status %d)."
-msgstr "Cluvo signale une erreur serveur (statut %d)."
+msgid "CleverVerein meldet einen Serverfehler (Status %d)."
+msgstr "CleverVerein signale une erreur serveur (statut %d)."
 
 #. translators: %d: HTTP status code
 #: includes/class-cluvo-client.php:210
 #, php-format
-msgid "Cluvo-API antwortete mit Status %d."
-msgstr "L’API Cluvo a répondu avec le statut %d."
+msgid "CleverVerein-API antwortete mit Status %d."
+msgstr "L’API CleverVerein a répondu avec le statut %d."
 
 #: includes/class-cluvo-client.php:335
-msgid "Cluvo ist noch nicht konfiguriert."
-msgstr "Cluvo n’est pas encore configuré."
+msgid "CleverVerein ist noch nicht konfiguriert."
+msgstr "CleverVerein n’est pas encore configuré."
 
 #: includes/class-cluvo-form-renderer.php:127
 msgid "Dieses Feld bitte leer lassen"
@@ -165,13 +165,13 @@ msgstr "Intervalle"
 #: includes/class-cluvo-form-renderer.php:544
 #, php-format
 msgid ""
-"Das Wiederholungsfeld «%s» kann das Plugin nicht anzeigen, weil die Cluvo-"
-"API keine Unterfelder liefert. Dieser Hinweis ist nur für Administratoren "
-"sichtbar."
+"Das Wiederholungsfeld «%s» kann das Plugin nicht anzeigen, weil die "
+"CleverVerein-API keine Unterfelder liefert. Dieser Hinweis ist nur für "
+"Administratoren sichtbar."
 msgstr ""
-"Le plugin ne peut pas afficher le champ répétable « %s », car l’API Cluvo ne "
-"fournit pas ses sous-champs. Cette remarque n’est visible que pour les "
-"administrateurs."
+"Le plugin ne peut pas afficher le champ répétable « %s », car l’API "
+"CleverVerein ne fournit pas ses sous-champs. Cette remarque n’est visible "
+"que pour les administrateurs."
 
 #: includes/class-cluvo-form-renderer.php:552
 msgid "Eintrag hinzufügen"
@@ -252,8 +252,8 @@ msgstr "Le formulaire n’a pas pu être envoyé. Réessaie plus tard."
 
 #: includes/class-cluvo-settings.php:41 includes/class-cluvo-settings.php:42
 #: includes/class-cluvo-settings.php:169
-msgid "Cluvo"
-msgstr "Cluvo"
+msgid "CleverVerein"
+msgstr "CleverVerein"
 
 #: includes/class-cluvo-settings.php:50
 msgid "Einstellungen"
@@ -287,11 +287,11 @@ msgstr "Le cache a été vidé."
 
 #: includes/class-cluvo-settings.php:177
 msgid ""
-"Verbinde diese Webseite mit einem oder mehreren Cluvo-Vereinen. Einen API-"
-"Key erstellst du in Cluvo unter Einstellungen → Integration."
+"Verbinde diese Webseite mit einem oder mehreren Vereinen aus CleverVerein. "
+"Einen API-Key erstellst du dort unter Einstellungen → Integration."
 msgstr ""
-"Connecte ce site à une ou plusieurs associations Cluvo. Tu crées une clé API "
-"dans Cluvo sous Réglages → Intégration."
+"Connecte ce site à une ou plusieurs associations CleverVerein. Tu crées une "
+"clé API dans CleverVerein sous Réglages → Intégration."
 
 #: includes/class-cluvo-settings.php:182
 msgid "Vereine"
@@ -334,20 +334,20 @@ msgstr "Durée du cache (secondes)"
 #: includes/class-cluvo-settings.php:215
 msgid ""
 "So lange werden Formulare, Veranstaltungen und News zwischengespeichert. Ist "
-"Cluvo nicht erreichbar, zeigt das Plugin bis zu einem Tag lang den letzten "
-"Stand."
+"CleverVerein nicht erreichbar, zeigt das Plugin bis zu einem Tag lang den "
+"letzten Stand."
 msgstr ""
-"Durée de mise en cache des formulaires, événements et actualités. Si Cluvo "
-"n’est pas joignable, le plugin affiche le dernier état connu pendant un jour "
-"au maximum."
+"Durée de mise en cache des formulaires, événements et actualités. Si "
+"CleverVerein n’est pas joignable, le plugin affiche le dernier état connu "
+"pendant un jour au maximum."
 
 #: includes/class-cluvo-settings.php:227
 msgid "Cache leeren"
 msgstr "Vider le cache"
 
 #: includes/class-cluvo-settings.php:228
-msgid "Änderungen aus Cluvo sofort anzeigen."
-msgstr "Afficher immédiatement les modifications faites dans Cluvo."
+msgid "Änderungen aus CleverVerein sofort anzeigen."
+msgstr "Afficher immédiatement les modifications faites dans CleverVerein."
 
 #: includes/class-cluvo-settings.php:235
 msgid "Shortcodes"
@@ -370,8 +370,8 @@ msgid "Attribute"
 msgstr "Attributs"
 
 #: includes/class-cluvo-settings.php:248
-msgid "<code>slug</code> – Slug des Formulars in Cluvo (Pflicht)"
-msgstr "<code>slug</code> – slug du formulaire dans Cluvo (obligatoire)"
+msgid "<code>slug</code> – Slug des Formulars in CleverVerein (Pflicht)"
+msgstr "<code>slug</code> – slug du formulaire dans CleverVerein (obligatoire)"
 
 #: includes/class-cluvo-settings.php:252
 msgid ""
@@ -446,10 +446,10 @@ msgstr "Activées"
 
 #: includes/class-cluvo-settings.php:324
 msgid ""
-"Ein- und ausschalten unter Plugins in der Zeile von Cluvo. Neue Versionen "
-"kommen von wp.cluvo.ch."
+"Ein- und ausschalten unter Plugins in der Zeile von CleverVerein. Neue "
+"Versionen kommen von wp.cluvo.ch."
 msgstr ""
-"À activer ou désactiver sous Extensions, dans la ligne de Cluvo. Les "
+"À activer ou désactiver sous Extensions, dans la ligne de CleverVerein. Les "
 "nouvelles versions proviennent de wp.cluvo.ch."
 
 #. translators: %s: version number
@@ -463,20 +463,20 @@ msgid "Jetzt nach Updates suchen"
 msgstr "Rechercher des mises à jour"
 
 #: includes/class-cluvo-settings.php:352
-msgid "Eine neue Version von Cluvo ist verfügbar."
-msgstr "Une nouvelle version de Cluvo est disponible."
+msgid "Eine neue Version von CleverVerein ist verfügbar."
+msgstr "Une nouvelle version de CleverVerein est disponible."
 
 #: includes/class-cluvo-settings.php:353
-msgid "Cluvo ist auf dem neuesten Stand."
-msgstr "Cluvo est à jour."
+msgid "CleverVerein ist auf dem neuesten Stand."
+msgstr "CleverVerein est à jour."
 
 #: includes/class-cluvo-settings.php:354
 msgid ""
-"Der Update-Server von Cluvo ist gerade nicht erreichbar. Bitte versuche es "
-"später erneut."
+"Der Update-Server von CleverVerein ist gerade nicht erreichbar. Bitte "
+"versuche es später erneut."
 msgstr ""
-"Le serveur de mises à jour de Cluvo est momentanément injoignable. Réessaie "
-"plus tard."
+"Le serveur de mises à jour de CleverVerein est momentanément injoignable. "
+"Réessaie plus tard."
 
 #. translators: %s: last four characters of the stored API key
 #: includes/class-cluvo-settings.php:380
@@ -588,8 +588,8 @@ msgid "Anmeldeschluss %s"
 msgstr "Délai d’inscription %s"
 
 #: includes/class-cluvo-shortcodes.php:323
-msgid "Mitglieder melden sich in der Cluvo-App an."
-msgstr "Les membres s’inscrivent dans l’app Cluvo."
+msgid "Mitglieder melden sich in der CleverVerein-App an."
+msgstr "Les membres s’inscrivent dans l’app CleverVerein."
 
 #: includes/class-cluvo-shortcodes.php:325
 msgid "Auf die Warteliste"

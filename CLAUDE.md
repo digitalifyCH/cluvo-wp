@@ -1,9 +1,15 @@
-# Cluvo WordPress-Plugin (cluvo-wp)
+# CleverVerein WordPress-Plugin (cluvo-wp)
 
-Bettet Formulare, Veranstaltungen und News eines oder mehrerer Cluvo-Vereine per Shortcode in WordPress ein. Spricht
-die **Plugin-API** von Cluvo (`https://app.cluvo.ch/api/v1`), Gegenstück im Hauptprojekt `~/Projects/cluvo`
+Bettet Formulare, Veranstaltungen und News eines oder mehrerer Vereine aus CleverVerein per Shortcode in WordPress ein. Spricht
+die **Plugin-API** von CleverVerein (`https://app.cluvo.ch/api/v1`), Gegenstück im Hauptprojekt `~/Projects/cluvo`
 (dort `routes/api.php`, `app/Http/Controllers/Api/`, `app/Actions/ProcessFormSubmission.php`).
 Öffentliches Repo `digitalifyCH/cluvo-wp`. PHP ≥ 8.0, WordPress ≥ 6.0, kein Composer, kein Build-Schritt fürs JS/CSS.
+
+**Name:** Das Produkt heisst **CleverVerein** (früher Cluvo) – so steht es in jedem sichtbaren Text, auch auf Französisch und
+Italienisch; Pläne heissen nur «Pro» und «Basic». Technisch bleibt `cluvo`, weil bestehende Installationen daran hängen:
+Plugin-Ordner und `cluvo.php`, Textdomain, Shortcodes, Optionen und Transients, Konstanten `CLUVO_*`, Klassen- und
+Funktionspräfixe, Hooks, CSS-Klassen, REST-Namespace `cluvo/v1`, `Update URI` und Update-Server `wp.cluvo.ch`. API-Basis
+(`app.cluvo.ch`) und Links auf `www.cluvo.ch` wechseln erst mit dem Umzug der Server auf cleververein.ch.
 
 ## Aufbau
 
@@ -12,38 +18,38 @@ die **Plugin-API** von Cluvo (`https://app.cluvo.ch/api/v1`), Gegenstück im Hau
 | [cluvo.php](cluvo.php) | Header (`Version`, `Update URI`), Konstanten, lädt die Klassen |
 | [Cluvo_Plugin](includes/class-cluvo-plugin.php) | Verdrahtet alles, Textdomain, Assets nur auf Seiten mit Shortcode |
 | [Cluvo_Client](includes/class-cluvo-client.php) | HTTP zur API, Konten (Option `cluvo_settings`), Cache, Fehlermeldungen |
-| [Cluvo_Settings](includes/class-cluvo-settings.php) | Einstellungen → Cluvo: Vereine/API-Keys, «Testen», Cache, Updates, Shortcode-Übersicht |
+| [Cluvo_Settings](includes/class-cluvo-settings.php) | Einstellungen → CleverVerein: Vereine/API-Keys, «Testen», Cache, Updates, Shortcode-Übersicht |
 | [Cluvo_Shortcodes](includes/class-cluvo-shortcodes.php) | `[cluvo_form]`, `[cluvo_events]`, `[cluvo_news]` |
-| [Cluvo_Form_Renderer](includes/class-cluvo-form-renderer.php) | Formular-Schema der API → HTML wie das Formular auf der Cluvo-Webseite |
+| [Cluvo_Form_Renderer](includes/class-cluvo-form-renderer.php) | Formular-Schema der API → HTML wie das Formular auf der CleverVerein-Webseite |
 | [Cluvo_Rest](includes/class-cluvo-rest.php) | Proxy `POST /wp-json/cluvo/v1/accounts/{id}/forms/{slug}/submit` |
 | [Cluvo_Updater](includes/class-cluvo-updater.php) | Updates von wp.cluvo.ch |
 | [assets/cluvo.js](assets/cluvo.js), [cluvo.css](assets/cluvo.css) | Formularlogik und Stile (alles unter `.cluvo`, CSS-Variablen `--cluvo-*`) |
 
-## Verbindung zu Cluvo
+## Verbindung zu CleverVerein
 
-- **Ein API-Key pro Verein** (Multi-Account, Dachverbände), erstellt in Cluvo unter Einstellungen → Integration. Konten
+- **Ein API-Key pro Verein** (Multi-Account, Dachverbände), erstellt in CleverVerein unter Einstellungen → Integration. Konten
   haben eine stabile ID (`next_id`), im Shortcode `account="<id>"`; bei nur einem Konto darf das Attribut fehlen.
   Gespeicherte Keys werden nie mehr ausgegeben – leeres Feld beim Speichern heisst «Key behalten».
 - Endpunkte: `forms`, `forms/{slug}`, `forms/{slug}/submit`, `events`, `events/{id}`, `news`, `news/{slug}`. Sprache über
   `Accept-Language` aus der WordPress-Locale.
-- **Cluvo Basic sperrt die Plugin-API** (403 mit Meldung) – `Cluvo_Client::response_error()` reicht die Meldung durch.
+- **Der Plan Basic sperrt die Plugin-API** (403 mit Meldung) – `Cluvo_Client::response_error()` reicht die Meldung durch.
 - Lokal gegen ddev: in `wp-config.php` `define( 'CLUVO_API_BASE_URL', 'https://app.cluvo.ddev.site/api/v1' );`, das
   ddev-Zertifikat per Filter `cluvo_http_request_args` (`sslverify => false`) akzeptieren.
-- **Cache:** GETs als Transient pro Konto, Key, Locale und Pfad (Einstellung `cache_ttl`, Standard 600 s). Ist Cluvo nicht
+- **Cache:** GETs als Transient pro Konto, Key, Locale und Pfad (Einstellung `cache_ttl`, Standard 600 s). Ist CleverVerein nicht
   erreichbar (0, 429, 5xx), gilt bis zu einem Tag der letzte gute Stand (`_s`-Transient); 401/403/404 löschen ihn – ein
   deaktiviertes Formular soll nicht wieder auftauchen. «Cache leeren» erhöht `cluvo_cache_generation`.
 
 ## Formulare
 
-Das Formular im Plugin muss **dem Web-Formular in Cluvo entsprechen**: Namensblock (Privatperson/Unternehmen,
+Das Formular im Plugin muss **dem Web-Formular in CleverVerein entsprechen**: Namensblock (Privatperson/Unternehmen,
 `contact_type`, Firmenname, Vor-/Nachname), Kontaktangaben, `membership` (fixe Mitgliedschaften als Auswahlkarten) **oder**
 `membership_fee` (freier Beitrag mit Beträgen pro Intervall), Zusatzfelder `cf_{id}` inkl. Wiederholungsfelder
 (`sub_fields`), Zwischentitel `html_*` (nur Text), Trennlinien `divider_*`, Breiten `full|half|third|two-thirds`.
 Die Akzentfarbe kommt aus der Vereinsfarbe (`organization.primary_color`, Filter `cluvo_accent_color`).
-Validiert wird massgeblich in Cluvo; Fehler kommen als 422 und werden pro Feld angezeigt.
+Validiert wird massgeblich in CleverVerein; Fehler kommen als 422 und werden pro Feld angezeigt.
 
 **Fallen:**
-- Neue Feldtypen im Formular-Builder von Cluvo hier nachziehen: Renderer (PHP) **und** `cluvo.js` – und ein neues
+- Neue Feldtypen im Formular-Builder von CleverVerein hier nachziehen: Renderer (PHP) **und** `cluvo.js` – und ein neues
   Standardfeld zusätzlich in `Cluvo_Rest::FIELDS`, sonst verwirft der Proxy es stillschweigend (Allowlist).
 - Der Proxy ist absichtlich öffentlich (`permission_callback` `__return_true`); Schutz über Honeypot `cluvo_hp`, Limit pro
   IP und Konto (Filter `cluvo_submit_rate_limit`, `cluvo_submit_rate_window`, `cluvo_client_ip` hinter Proxys) und
@@ -57,18 +63,18 @@ Alias, `layout="cards"` für Karten), `[cluvo_news limit category pagination]`. 
 Query-Parameter auf derselben WordPress-Seite: `cluvo_article`, `cluvo_page` bzw. `cluvo_event`, `cluvo_date` (Vorkommen einer
 Serie) und `cluvo_account` (nur das Konto, für das der Link gemacht wurde, zeigt die Einzelansicht – mehrere Vereine auf einer
 Seite). Termine kommen aus `events` (Liste) und `events/{id}?datum=` (Einzeltermin mit `content`, `image_url`, `upcoming`);
-`description` ist reiner Text, `content` HTML aus dem Cluvo-Editor und läuft durch `wp_kses_post()`. Mit Anmeldung liefert
+`description` ist reiner Text, `content` HTML aus dem CleverVerein-Editor und läuft durch `wp_kses_post()`. Mit Anmeldung liefert
 `events/{id}` zusätzlich `registration` (Stand); das Plugin zeigt ihn und verlinkt das Formular auf der Vereinswebseite
-(`url#anmeldung`) – angemeldet wird dort, nicht über das Plugin (Cluvo: `docs/anmeldungen.md`). Vertrag und Entscheide im
+(`url#anmeldung`) – angemeldet wird dort, nicht über das Plugin (CleverVerein: `docs/anmeldungen.md`). Vertrag und Entscheide im
 Hauptprojekt: `docs/veranstaltungen.md` (V-12). Fehlermeldungen sehen Besucher neutral, Administratoren
 mit Ursache.
 
 ## Updates und Release
 
-Updates kommen von **wp.cluvo.ch** (VPS von Cluvo, Caddy liefert `/var/www/wp-updates/cluvo/` statisch). Der Header
+Updates kommen von **wp.cluvo.ch** (VPS von CleverVerein, Caddy liefert `/var/www/wp-updates/cluvo/` statisch). Der Header
 `Update URI: https://wp.cluvo.ch/cluvo/` lässt WordPress den Filter `update_plugins_wp.cluvo.ch` aufrufen und hält
 wordpress.org draussen. `Cluvo_Updater` liest `info.json` (6 h Cache), installiert nur ZIPs unter derselben Adresse und
-zeigt den Stand unter Einstellungen → Cluvo («Jetzt nach Updates suchen», auch in der Plugin-Liste).
+zeigt den Stand unter Einstellungen → CleverVerein («Jetzt nach Updates suchen», auch in der Plugin-Liste).
 
 **Release:** Version in `cluvo.php` (Header **und** `CLUVO_VERSION`) und `readme.txt` (`Stable tag`) erhöhen, Changelog
 `= X.Y.Z =` in `readme.txt`, auf `main` pushen. Die Action [release.yml](.github/workflows/release.yml) baut mit
@@ -87,7 +93,7 @@ wenn die Version neuer ist als die auf wp.cluvo.ch – plus GitHub-Release. Deta
 
 ## Übersetzungen
 
-Quelltexte auf **Deutsch in der Du-Form** (wie Cluvo), Textdomain `cluvo`. `languages/` enthält `cluvo.pot`, `fr_FR`, `it_IT`
+Quelltexte auf **Deutsch in der Du-Form** (wie CleverVerein), Textdomain `cluvo`. `languages/` enthält `cluvo.pot`, `fr_FR`, `it_IT`
 (gelten auch für `fr_CH`/`it_CH`, siehe `Cluvo_Plugin::load_textdomain()`). Nach Textänderungen `xgettext` → `msgmerge` →
 übersetzen → `msgfmt --check` (Befehle in RELEASING.md); `.mo` wird eingecheckt. Die Action prüft alle `.po`.
 

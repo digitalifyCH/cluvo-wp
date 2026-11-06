@@ -1,15 +1,15 @@
 <?php
 /**
- * Thin HTTP client for the Cluvo REST API.
+ * Thin HTTP client for the CleverVerein REST API.
  *
- * Supports multiple Cluvo accounts (one per Verein) on a single site. Each
+ * Supports multiple CleverVerein accounts (one per Verein) on a single site. Each
  * account has a stable numeric id and its own API key. All requests go to the
- * Cluvo API (app.cluvo.ch) – for local development the base URL can be
+ * CleverVerein API (app.cluvo.ch) – for local development the base URL can be
  * overridden in wp-config.php:
  *
  *   define( 'CLUVO_API_BASE_URL', 'https://app.cluvo.ddev.site/api/v1' );
  *
- * GET requests are cached per account, key, locale and query. When Cluvo is
+ * GET requests are cached per account, key, locale and query. When CleverVerein is
  * unreachable, the last good response is served for up to a day. API keys
  * never leave the server.
  */
@@ -32,7 +32,7 @@ class Cluvo_Client {
 	/** Failed requests are remembered this long, so an outage doesn't slow every page view. */
 	const ERROR_TTL = 60;
 
-	/** Last good response, served while Cluvo is unreachable. */
+	/** Last good response, served while CleverVerein is unreachable. */
 	const STALE_TTL = 86400;
 
 	/**
@@ -88,7 +88,7 @@ class Cluvo_Client {
 		$accounts = $this->get_accounts();
 
 		if ( empty( $accounts ) ) {
-			return new WP_Error( 'cluvo_no_accounts', __( 'Es ist noch kein Cluvo-Verein hinterlegt.', 'cluvo' ) );
+			return new WP_Error( 'cluvo_no_accounts', __( 'Es ist noch kein Verein aus CleverVerein hinterlegt.', 'cluvo' ) );
 		}
 
 		if ( $requested_id ) {
@@ -128,7 +128,7 @@ class Cluvo_Client {
 	}
 
 	/**
-	 * One public event with content (Cluvo ≥ 2026-10). For a series: the occurrence on $date, otherwise the next one;
+	 * One public event with content (CleverVerein ≥ 2026-10). For a series: the occurrence on $date, otherwise the next one;
 	 * `upcoming` lists the following dates.
 	 */
 	public function get_event( $id, $date, $account_id ) {
@@ -169,7 +169,7 @@ class Cluvo_Client {
 	/**
 	 * Turn a failed response into a WP_Error with an understandable message.
 	 * Returns null for 2xx responses. The HTTP status is in the error data
-	 * (0 when Cluvo could not be reached at all).
+	 * (0 when CleverVerein could not be reached at all).
 	 *
 	 * @param array{status:int,body:array}|WP_Error $response
 	 * @return WP_Error|null
@@ -182,7 +182,7 @@ class Cluvo_Client {
 			return new WP_Error(
 				'cluvo_unreachable',
 				/* translators: %s: technical error message */
-				sprintf( __( 'Cluvo ist nicht erreichbar (%s).', 'cluvo' ), $response->get_error_message() ),
+				sprintf( __( 'CleverVerein ist nicht erreichbar (%s).', 'cluvo' ), $response->get_error_message() ),
 				array( 'status' => 0 )
 			);
 		}
@@ -195,19 +195,19 @@ class Cluvo_Client {
 		$api_message = isset( $response['body']['message'] ) && is_string( $response['body']['message'] ) ? $response['body']['message'] : '';
 
 		if ( 401 === $status ) {
-			$message = __( 'Der API-Key ist ungültig oder wurde in Cluvo widerrufen.', 'cluvo' );
+			$message = __( 'Der API-Key ist ungültig oder wurde in CleverVerein widerrufen.', 'cluvo' );
 		} elseif ( 403 === $status ) {
-			$message = '' !== $api_message ? $api_message : __( 'Kein Zugriff auf die Cluvo-API.', 'cluvo' );
+			$message = '' !== $api_message ? $api_message : __( 'Kein Zugriff auf die CleverVerein-API.', 'cluvo' );
 		} elseif ( 404 === $status ) {
-			$message = __( 'Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in Cluvo aktiv und öffentlich?', 'cluvo' );
+			$message = __( 'Nicht gefunden. Ist der Slug richtig und das Formular bzw. der Artikel in CleverVerein aktiv und öffentlich?', 'cluvo' );
 		} elseif ( 429 === $status ) {
-			$message = __( 'Zu viele Anfragen an Cluvo. Bitte versuche es gleich nochmals.', 'cluvo' );
+			$message = __( 'Zu viele Anfragen an CleverVerein. Bitte versuche es gleich nochmals.', 'cluvo' );
 		} elseif ( $status >= 500 ) {
 			/* translators: %d: HTTP status code */
-			$message = sprintf( __( 'Cluvo meldet einen Serverfehler (Status %d).', 'cluvo' ), $status );
+			$message = sprintf( __( 'CleverVerein meldet einen Serverfehler (Status %d).', 'cluvo' ), $status );
 		} else {
 			/* translators: %d: HTTP status code */
-			$message = sprintf( __( 'Cluvo-API antwortete mit Status %d.', 'cluvo' ), $status );
+			$message = sprintf( __( 'CleverVerein-API antwortete mit Status %d.', 'cluvo' ), $status );
 		}
 
 		return new WP_Error( 'cluvo_api_error', $message, array( 'status' => $status ) );
@@ -222,7 +222,7 @@ class Cluvo_Client {
 	}
 
 	/**
-	 * Clear all cached Cluvo responses (called when settings change). Bumping
+	 * Clear all cached CleverVerein responses (called when settings change). Bumping
 	 * the generation also invalidates entries held in a persistent object cache.
 	 */
 	public static function flush_cache() {
@@ -332,7 +332,7 @@ class Cluvo_Client {
 	 */
 	private function request( $method, $path, $api_key, $args = array() ) {
 		if ( empty( $api_key ) ) {
-			return new WP_Error( 'cluvo_not_configured', __( 'Cluvo ist noch nicht konfiguriert.', 'cluvo' ) );
+			return new WP_Error( 'cluvo_not_configured', __( 'CleverVerein ist noch nicht konfiguriert.', 'cluvo' ) );
 		}
 
 		$url = trailingslashit( self::base_url() ) . ltrim( $path, '/' );
@@ -355,7 +355,7 @@ class Cluvo_Client {
 		}
 
 		/**
-		 * Filters the HTTP arguments for requests to the Cluvo API, e.g. to
+		 * Filters the HTTP arguments for requests to the CleverVerein API, e.g. to
 		 * disable SSL verification against a local development instance.
 		 */
 		$request_args = apply_filters( 'cluvo_http_request_args', $request_args, $method, $path );

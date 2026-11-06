@@ -1,6 +1,6 @@
 <?php
 /**
- * Updates from Cluvo's own update server (wp.cluvo.ch).
+ * Updates from CleverVerein's own update server (wp.cluvo.ch).
  *
  * The plugin header carries `Update URI: https://wp.cluvo.ch/cluvo/`, so
  * WordPress asks us – not wordpress.org – about new versions (filter
@@ -229,10 +229,10 @@ class Cluvo_Updater {
 		}
 
 		return (object) array(
-			'name'          => 'Cluvo',
+			'name'          => 'CleverVerein',
 			'slug'          => $this->slug,
 			'version'       => $info['version'],
-			'author'        => '<a href="https://www.cluvo.ch">Cluvo</a>',
+			'author'        => '<a href="https://www.cluvo.ch">CleverVerein</a>',
 			'homepage'      => $info['homepage'],
 			'requires'      => $info['requires'],
 			'requires_php'  => $info['requires_php'],

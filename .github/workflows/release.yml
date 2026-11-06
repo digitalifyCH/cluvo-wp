@@ -72,7 +72,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          # Host-Schlüssel fest statt ssh-keyscan bei jedem Lauf (wie im Deploy von Cluvo)
+          # Host-Schlüssel fest statt ssh-keyscan bei jedem Lauf (wie im Deploy von CleverVerein)
           echo "179.237.96.154 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEhL3x80k9xWEcAbMI7IUV+x5Wyk5W6pl02+zN9cr7Xi" >> ~/.ssh/known_hosts
 
       - name: Auf wp.cluvo.ch veröffentlichen
@@ -100,7 +100,7 @@ jobs:
           test "$(curl -fsS "$INFO_URL" | jq -r .version)" = "$VERSION"
           curl -fsS -o /tmp/live.zip "https://wp.cluvo.ch/cluvo/cluvo-$VERSION.zip"
           test "$(sha256sum /tmp/live.zip | cut -d' ' -f1)" = "$(jq -r .sha256 dist/info.json)"
-          echo "Cluvo $VERSION ist auf wp.cluvo.ch."
+          echo "CleverVerein $VERSION ist auf wp.cluvo.ch."
 
       - name: GitHub-Release
         if: steps.check.outputs.publish == 'true'
@@ -108,7 +108,7 @@ jobs:
         with:
           tag_name: v${{ steps.build.outputs.version }}
           target_commitish: ${{ github.sha }}
-          name: Cluvo ${{ steps.build.outputs.version }}
+          name: CleverVerein ${{ steps.build.outputs.version }}
           body_path: dist/release-notes.md
           files: dist/cluvo-${{ steps.build.outputs.version }}.zip
           fail_on_unmatched_files: true

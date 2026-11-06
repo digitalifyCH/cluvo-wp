@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin settings page: cache duration plus a list of Cluvo accounts (one per
+ * Admin settings page: cache duration plus a list of CleverVerein accounts (one per
  * Verein), each with a stable numeric id used in shortcodes.
  *
  * Stored API keys are never printed into the page again; leaving the key
@@ -38,8 +38,8 @@ class Cluvo_Settings {
 
 	public function add_menu() {
 		add_options_page(
-			__( 'Cluvo', 'cluvo' ),
-			__( 'Cluvo', 'cluvo' ),
+			__( 'CleverVerein', 'cluvo' ),
+			__( 'CleverVerein', 'cluvo' ),
 			'manage_options',
 			self::PAGE,
 			array( $this, 'render_page' )
@@ -166,7 +166,7 @@ class Cluvo_Settings {
 		$example  = count( $accounts ) > 1 ? ' account="' . (int) $accounts[0]['id'] . '"' : '';
 		?>
 		<div class="wrap cluvo-admin">
-			<h1><?php esc_html_e( 'Cluvo', 'cluvo' ); ?></h1>
+			<h1><?php esc_html_e( 'CleverVerein', 'cluvo' ); ?></h1>
 
 			<?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 			<?php if ( isset( $_GET['cluvo_flushed'] ) ) : ?>
@@ -174,7 +174,7 @@ class Cluvo_Settings {
 			<?php endif; ?>
 			<?php Cluvo_Settings::update_check_notice(); ?>
 
-			<p><?php esc_html_e( 'Verbinde diese Webseite mit einem oder mehreren Cluvo-Vereinen. Einen API-Key erstellst du in Cluvo unter Einstellungen → Integration.', 'cluvo' ); ?></p>
+			<p><?php esc_html_e( 'Verbinde diese Webseite mit einem oder mehreren Vereinen aus CleverVerein. Einen API-Key erstellst du dort unter Einstellungen → Integration.', 'cluvo' ); ?></p>
 
 			<form action="options.php" method="post">
 				<?php settings_fields( 'cluvo_settings_group' ); ?>
@@ -212,7 +212,7 @@ class Cluvo_Settings {
 						<th scope="row"><label for="cluvo_cache_ttl"><?php esc_html_e( 'Cache-Dauer (Sekunden)', 'cluvo' ); ?></label></th>
 						<td>
 							<input name="<?php echo esc_attr( $opt ); ?>[cache_ttl]" id="cluvo_cache_ttl" type="number" min="30" step="30" class="small-text" value="<?php echo esc_attr( $settings['cache_ttl'] ); ?>" aria-describedby="cluvo_cache_ttl_help" />
-							<p class="description" id="cluvo_cache_ttl_help"><?php esc_html_e( 'So lange werden Formulare, Veranstaltungen und News zwischengespeichert. Ist Cluvo nicht erreichbar, zeigt das Plugin bis zu einem Tag lang den letzten Stand.', 'cluvo' ); ?></p>
+							<p class="description" id="cluvo_cache_ttl_help"><?php esc_html_e( 'So lange werden Formulare, Veranstaltungen und News zwischengespeichert. Ist CleverVerein nicht erreichbar, zeigt das Plugin bis zu einem Tag lang den letzten Stand.', 'cluvo' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -225,7 +225,7 @@ class Cluvo_Settings {
 				<?php wp_nonce_field( 'cluvo_flush_cache' ); ?>
 				<p>
 					<button type="submit" class="button"><?php esc_html_e( 'Cache leeren', 'cluvo' ); ?></button>
-					<span class="description"><?php esc_html_e( 'Änderungen aus Cluvo sofort anzeigen.', 'cluvo' ); ?></span>
+					<span class="description"><?php esc_html_e( 'Änderungen aus CleverVerein sofort anzeigen.', 'cluvo' ); ?></span>
 				</p>
 			</form>
 
@@ -245,7 +245,7 @@ class Cluvo_Settings {
 				<tbody>
 					<tr>
 						<td><code>[cluvo_form<?php echo esc_html( $example ); ?> slug="mitglied-werden"]</code></td>
-						<td><?php echo wp_kses( __( '<code>slug</code> – Slug des Formulars in Cluvo (Pflicht)', 'cluvo' ), array( 'code' => array() ) ); ?></td>
+						<td><?php echo wp_kses( __( '<code>slug</code> – Slug des Formulars in CleverVerein (Pflicht)', 'cluvo' ), array( 'code' => array() ) ); ?></td>
 					</tr>
 					<tr>
 						<td><code>[cluvo_events<?php echo esc_html( $example ); ?> limit="10"]</code></td>
@@ -321,7 +321,7 @@ class Cluvo_Settings {
 				<th scope="row"><?php esc_html_e( 'Automatische Updates', 'cluvo' ); ?></th>
 				<td>
 					<?php echo $auto ? esc_html__( 'Eingeschaltet', 'cluvo' ) : esc_html__( 'Ausgeschaltet', 'cluvo' ); ?>
-					<p class="description"><?php esc_html_e( 'Ein- und ausschalten unter Plugins in der Zeile von Cluvo. Neue Versionen kommen von wp.cluvo.ch.', 'cluvo' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Ein- und ausschalten unter Plugins in der Zeile von CleverVerein. Neue Versionen kommen von wp.cluvo.ch.', 'cluvo' ); ?></p>
 				</td>
 			</tr>
 		</table>
@@ -349,9 +349,9 @@ class Cluvo_Settings {
 		$result = isset( $_GET['cluvo_update_check'] ) ? sanitize_key( wp_unslash( $_GET['cluvo_update_check'] ) ) : '';
 
 		$messages = array(
-			'available' => array( 'warning', __( 'Eine neue Version von Cluvo ist verfügbar.', 'cluvo' ) ),
-			'current'   => array( 'success', __( 'Cluvo ist auf dem neuesten Stand.', 'cluvo' ) ),
-			'error'     => array( 'error', __( 'Der Update-Server von Cluvo ist gerade nicht erreichbar. Bitte versuche es später erneut.', 'cluvo' ) ),
+			'available' => array( 'warning', __( 'Eine neue Version von CleverVerein ist verfügbar.', 'cluvo' ) ),
+			'current'   => array( 'success', __( 'CleverVerein ist auf dem neuesten Stand.', 'cluvo' ) ),
+			'error'     => array( 'error', __( 'Der Update-Server von CleverVerein ist gerade nicht erreichbar. Bitte versuche es später erneut.', 'cluvo' ) ),
 		);
 
 		if ( ! isset( $messages[ $result ] ) ) {

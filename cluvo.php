@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       Cluvo
+ * Plugin Name:       CleverVerein
  * Plugin URI:        https://www.cluvo.ch
- * Description:        Bindet Cluvo-Formulare, Veranstaltungen und News über die Cluvo REST-API in WordPress ein.
+ * Description:        Bindet CleverVerein-Formulare, Veranstaltungen und News über die CleverVerein REST-API in WordPress ein.
  * Version:           0.4.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
- * Author:            Cluvo
+ * Author:            CleverVerein
  * Author URI:        https://www.cluvo.ch
  * License:           GPL-2.0-or-later
  * Text Domain:       cluvo

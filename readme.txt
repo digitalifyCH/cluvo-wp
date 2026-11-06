@@ -1,6 +1,6 @@
-=== Cluvo ===
+=== CleverVerein ===
 Contributors: cluvo
-Tags: cluvo, verein, formulare, veranstaltungen, news
+Tags: cleververein, verein, formulare, veranstaltungen, news
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.0
@@ -8,12 +8,12 @@ Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Bindet Cluvo-Formulare, Veranstaltungen und News über die Cluvo REST-API in WordPress ein.
+Bindet CleverVerein-Formulare, Veranstaltungen und News über die CleverVerein REST-API in WordPress ein.
 
 == Description ==
 
 Dieses Plugin verbindet eine WordPress-Webseite mit einem oder mehreren
-Cluvo-Vereinen – ideal auch für Dachverband-Seiten. Über Shortcodes lassen sich
+Vereinen aus CleverVerein – ideal auch für Dachverband-Seiten. Über Shortcodes lassen sich
 Anmelde-/Antragsformulare, kommende Veranstaltungen und News direkt auf der
 Webseite anzeigen.
 
@@ -30,7 +30,7 @@ das Attribut entfallen.
 * `[cluvo_form account="1" slug="mein-formular"]` – bettet ein Formular ein (native Felder,
   inkl. fixer Mitgliedschaften, freiem Beitrag und Zusatzfeldern).
 * `[cluvo_events account="1" limit="10" category="" from="2026-01-01" to="" layout="list"]` – kommende
-  Veranstaltungen mit Titelbild und eigener Detailansicht (Inhalt aus dem Cluvo-Editor, weitere Daten einer
+  Veranstaltungen mit Titelbild und eigener Detailansicht (Inhalt aus dem CleverVerein-Editor, weitere Daten einer
   Serie); Serientermine erscheinen einzeln. `layout="cards"` zeigt Karten statt einer Liste, `per_page` ist ein
   Alias für `limit`.
 * `[cluvo_news account="1" limit="6" category="" pagination="1"]` – aktuelle News mit Bild
@@ -40,17 +40,17 @@ Die Plugin-Oberfläche ist auf Deutsch, Französisch und Italienisch verfügbar 
 
 = Updates =
 
-Neue Versionen kommen direkt von Cluvo (wp.cluvo.ch). WordPress zeigt sie wie
-gewohnt unter Dashboard → Aktualisierungen an. Unter Einstellungen → Cluvo
+Neue Versionen kommen direkt von CleverVerein (wp.cluvo.ch). WordPress zeigt sie wie
+gewohnt unter Dashboard → Aktualisierungen an. Unter Einstellungen → CleverVerein
 siehst du die installierte und die neueste Version und kannst sofort nach
 Updates suchen. Automatische Updates schaltest du unter Plugins in der Zeile
-von Cluvo ein.
+von CleverVerein ein.
 
 = Für Entwickler =
 
 * `CLUVO_API_BASE_URL` (wp-config.php) – andere API-Basis, z.B. für lokale Tests.
 * `cluvo_http_request_args` – HTTP-Argumente der API-Aufrufe (z.B. `sslverify` lokal).
-* `cluvo_accent_color` – Akzentfarbe der Formulare (Standard: Vereinsfarbe aus Cluvo).
+* `cluvo_accent_color` – Akzentfarbe der Formulare (Standard: Vereinsfarbe aus CleverVerein).
   Per CSS: `.cluvo.cluvo { --cluvo-accent: #0a58ca; }`.
 * `cluvo_submit_rate_limit`, `cluvo_submit_rate_window` – Anmeldungen pro IP und Verein
   (Standard 20 pro 10 Minuten, 0 schaltet ab).
@@ -61,41 +61,41 @@ von Cluvo ein.
 
 1. Die neueste Version unter https://wp.cluvo.ch/cluvo/cluvo-latest.zip herunterladen und in WordPress unter
    Plugins → Installieren → Plugin hochladen installieren, dann aktivieren.
-2. Unter Einstellungen → Cluvo pro Verein den API-Key eintragen. Du findest
-   ihn in Cluvo unter Einstellungen → Integration.
+2. Unter Einstellungen → CleverVerein pro Verein den API-Key eintragen. Du findest
+   ihn in CleverVerein unter Einstellungen → Integration.
 3. Shortcodes auf einer Seite oder in einem Beitrag verwenden.
 
 == Changelog ==
 
 = 0.4.0 =
-* Veranstaltungen: Jeder Termin hat eine Detailansicht auf derselben Seite – mit Titelbild, Inhalt aus dem Cluvo-Editor (Text, Bilder, Galerien, Knöpfe) und bei Serien den nächsten Daten.
+* Veranstaltungen: Jeder Termin hat eine Detailansicht auf derselben Seite – mit Titelbild, Inhalt aus dem CleverVerein-Editor (Text, Bilder, Galerien, Knöpfe) und bei Serien den nächsten Daten.
 * Veranstaltungen: Titelbild in der Liste; neue Darstellung `layout="cards"` mit Karten wie bei den News.
-* News und Veranstaltungen: Bilder mit Legende und Galerien aus dem Cluvo-Editor werden passend dargestellt.
+* News und Veranstaltungen: Bilder mit Legende und Galerien aus dem CleverVerein-Editor werden passend dargestellt.
 * Übersetzungen ergänzt; zwei bisher fehlende Meldungen des Update-Servers sind jetzt übersetzt.
 * Veranstaltungen mit Anmeldung zeigen in der Detailansicht freie Plätze, Kosten und Anmeldeschluss und führen zum Formular auf der Vereinswebseite.
-* Braucht Cluvo ab Oktober 2026 (Endpunkt `events/{id}`); ältere Termine ohne Inhalt zeigen ihre Beschreibung.
+* Braucht CleverVerein ab Oktober 2026 (Endpunkt `events/{id}`); ältere Termine ohne Inhalt zeigen ihre Beschreibung.
 
 = 0.3.0 =
-* Updates kommen neu von wp.cluvo.ch statt von GitHub. Der Header «Update URI» sorgt dafür, dass nur Cluvo selbst Updates für dieses Plugin liefert.
-* Einstellungen → Cluvo zeigt die installierte und die neueste Version, ob automatische Updates an sind, und hat einen Knopf «Jetzt nach Updates suchen» – auch als Link in der Plugin-Liste.
-* «Details ansehen» zeigt Beschreibung, Installation und Changelog, die Update-Übersicht das Cluvo-Icon.
+* Updates kommen neu von wp.cluvo.ch statt von GitHub. Der Header «Update URI» sorgt dafür, dass nur CleverVerein selbst Updates für dieses Plugin liefert.
+* Einstellungen → CleverVerein zeigt die installierte und die neueste Version, ob automatische Updates an sind, und hat einen Knopf «Jetzt nach Updates suchen» – auch als Link in der Plugin-Liste.
+* «Details ansehen» zeigt Beschreibung, Installation und Changelog, die Update-Übersicht das CleverVerein-Icon.
 * Ein Update wird nur installiert, wenn das Paket vom Update-Server selbst stammt.
 
 = 0.2.0 =
 * Formulare: Fixe Mitgliedschaften erscheinen als Auswahlkarten mit Beschreibung und Preis (CHF … pro Jahr/Monat), inkl. Pflichtfeld und Fehleranzeige.
 * Formulare: Umschalter Privatperson/Unternehmen, Firmenname und Namen stehen zusammen; bei Unternehmen ist die Person freiwillig.
-* Formulare: Freier Beitrag wie auf der Cluvo-Webseite – Intervall, Beträge pro Intervall, individueller Betrag, Standardwerte, Min./Max.
+* Formulare: Freier Beitrag wie auf der CleverVerein-Webseite – Intervall, Beträge pro Intervall, individueller Betrag, Standardwerte, Min./Max.
 * Formulare: Breiten Drittel/Zweidrittel, Platzhalter, Hilfetexte, Zwischentitel, Telefon- und Wiederholungsfelder.
 * Formulare: Bessere Barrierefreiheit (Fehler pro Feld mit aria-invalid/aria-describedby, Fokus auf das erste fehlerhafte Feld, Statusmeldungen für Screenreader, sichtbarer Tastaturfokus) und eindeutige IDs bei mehreren Formularen auf einer Seite.
 * Sicherheit: Der Formular-Proxy leitet nur bekannte Felder weiter, hat einen Honeypot und ein Limit pro IP; API-Keys werden im Backend nicht mehr ausgegeben und Weiterleitungen nie mit dem Key verfolgt.
-* Robustheit: Ist Cluvo nicht erreichbar, zeigen Formulare, Veranstaltungen und News bis zu einem Tag den letzten Stand; Fehler werden kurz zwischengespeichert, statt jede Seite zu bremsen. Neuer Button «Cache leeren».
+* Robustheit: Ist CleverVerein nicht erreichbar, zeigen Formulare, Veranstaltungen und News bis zu einem Tag den letzten Stand; Fehler werden kurz zwischengespeichert, statt jede Seite zu bremsen. Neuer Button «Cache leeren».
 * Veranstaltungen: Datum und Zeit im Format der Webseite, mehrtägige und ganztägige Anlässe, Kategorie mit Farbe, `to`-Attribut.
 * News: Titelbild, Kategorie, Datum in der Zeitzone der Webseite, optionale Paginierung.
 * Backend: «Testen» nutzt den gespeicherten Key, nennt die Ursache von Fehlern und listet die Shortcodes aller aktiven Formulare; Übersicht der Shortcode-Attribute; Link «Einstellungen» in der Plugin-Liste. Administratoren sehen auf der Webseite, warum ein Inhalt nicht geladen werden konnte.
 * Übersetzungen Französisch und Italienisch.
-* CSS und JavaScript werden nur auf Seiten mit Cluvo-Shortcodes geladen; alle Stile sind mit `.cluvo` präfixiert und über CSS-Variablen anpassbar.
+* CSS und JavaScript werden nur auf Seiten mit CleverVerein-Shortcodes geladen; alle Stile sind mit `.cluvo` präfixiert und über CSS-Variablen anpassbar.
 * Updater: Nur Release-Assets des eigenen Repos werden installiert; ein anders benannter Plugin-Ordner bleibt beim Update erhalten.
 * Die API-Basis-URL muss nicht mehr eingetragen werden – das Plugin verbindet sich direkt mit app.cluvo.ch. Für Tests lässt sie sich in wp-config.php über CLUVO_API_BASE_URL überschreiben.
 
 = 0.1.0 =
-* Erste Version: Formulare, Veranstaltungen und News via Cluvo REST-API.
+* Erste Version: Formulare, Veranstaltungen und News via CleverVerein REST-API.

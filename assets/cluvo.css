@@ -1,8 +1,8 @@
 /*
- * Cluvo plugin front-end styles. Every selector is prefixed with .cluvo so
+ * CleverVerein plugin front-end styles. Every selector is prefixed with .cluvo so
  * themes stay untouched. Adjust the look via the custom properties, e.g.
  *   .cluvo.cluvo { --cluvo-accent: #0a58ca; --cluvo-radius: 4px; }
- * Forms use the Verein's colour from Cluvo unless the theme overrides it.
+ * Forms use the Verein's colour from CleverVerein unless the theme overrides it.
  */
 
 .cluvo {
@@ -1071,7 +1071,7 @@
 	height: auto;
 }
 
-/* Inhalt aus dem Cluvo-Editor: Bilder mit Legende, Galerien */
+/* Inhalt aus dem CleverVerein-Editor: Bilder mit Legende, Galerien */
 .cluvo-article__content figure {
 	margin: 1.5rem 0;
 }

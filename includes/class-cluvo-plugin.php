@@ -64,7 +64,7 @@ class Cluvo_Plugin {
 
 	/**
 	 * Register front-end assets. On singular pages whose content contains a
-	 * Cluvo shortcode they are enqueued right away (no flash of unstyled
+	 * CleverVerein shortcode they are enqueued right away (no flash of unstyled
 	 * content); elsewhere – widgets, page builders – the shortcodes enqueue
 	 * them late.
 	 */

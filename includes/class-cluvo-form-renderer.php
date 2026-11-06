@@ -1,11 +1,11 @@
 <?php
 /**
- * Renders a Cluvo form schema as native WordPress HTML.
+ * Renders a CleverVerein form schema as native WordPress HTML.
  *
  * The markup posts to the plugin's REST proxy (see Cluvo_Rest), which forwards
- * the submission to Cluvo with the stored API key. Server-side validation in
- * Cluvo remains authoritative; this renderer mirrors the public form on the
- * Cluvo website: name block, fixed memberships, free contribution, custom fields.
+ * the submission to CleverVerein with the stored API key. Server-side validation in
+ * CleverVerein remains authoritative; this renderer mirrors the public form on the
+ * CleverVerein website: name block, fixed memberships, free contribution, custom fields.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -50,7 +50,7 @@ class Cluvo_Form_Renderer {
 
 	/**
 	 * @param array $form       Decoded `data` payload from GET /forms/{slug}.
-	 * @param int   $account_id Cluvo account the form belongs to.
+	 * @param int   $account_id CleverVerein account the form belongs to.
 	 */
 	public static function render( $form, $account_id ) {
 		$renderer = new self( $form, $account_id );
@@ -101,7 +101,7 @@ class Cluvo_Form_Renderer {
 			$fields .= $this->field( $key, $field );
 		}
 
-		// Cluvo needs a name for every contact, even if the schema lacks it.
+		// CleverVerein needs a name for every contact, even if the schema lacks it.
 		if ( ! $named ) {
 			$fields = $this->name_block() . $fields;
 		}
@@ -148,7 +148,7 @@ class Cluvo_Form_Renderer {
 			return '<hr class="cluvo-col--full cluvo-divider" />';
 		}
 
-		// Zwischentitel: plain text in Cluvo's form builder.
+		// Zwischentitel: plain text in CleverVerein's form builder.
 		if ( 0 === strpos( $key, 'html_' ) ) {
 			$content = isset( $field['content'] ) ? trim( wp_strip_all_tags( (string) $field['content'] ) ) : '';
 			return '' === $content ? '' : '<p class="cluvo-col--' . esc_attr( $width ) . ' cluvo-form__heading">' . esc_html( $content ) . '</p>';
@@ -315,7 +315,7 @@ class Cluvo_Form_Renderer {
 	 * ------------------------------------------------------------------- */
 
 	/**
-	 * Mirrors Cluvo: optional interval choice first, then preset amounts for
+	 * Mirrors CleverVerein: optional interval choice first, then preset amounts for
 	 * that interval (plus «Individueller Betrag») or a free amount input.
 	 */
 	private function membership_fee( $settings, $width ) {
@@ -541,7 +541,7 @@ class Cluvo_Form_Renderer {
 			}
 			return '<p class="cluvo-col--full cluvo-notice cluvo-notice--admin">'
 				/* translators: %s: custom field label */
-				. esc_html( sprintf( __( 'Das Wiederholungsfeld «%s» kann das Plugin nicht anzeigen, weil die Cluvo-API keine Unterfelder liefert. Dieser Hinweis ist nur für Administratoren sichtbar.', 'cluvo' ), $label ) )
+				. esc_html( sprintf( __( 'Das Wiederholungsfeld «%s» kann das Plugin nicht anzeigen, weil die CleverVerein-API keine Unterfelder liefert. Dieser Hinweis ist nur für Administratoren sichtbar.', 'cluvo' ), $label ) )
 				. '</p>';
 		}
 

@@ -3,9 +3,9 @@
  * REST proxy so the browser can submit forms without ever seeing the API key.
  *
  * Route: POST /wp-json/cluvo/v1/accounts/{account}/forms/{slug}/submit
- * Forwards only the known form fields to Cluvo using the account's API key.
+ * Forwards only the known form fields to CleverVerein using the account's API key.
  * 201 and 422 responses reach the front-end script unchanged; other failures
- * are mapped to messages that don't expose details of the Cluvo account.
+ * are mapped to messages that don't expose details of the CleverVerein account.
  *
  * The route is public by design (anonymous visitors submit forms). A honeypot
  * field and a per-IP limit keep bots from using it to flood the Verein.
@@ -20,7 +20,7 @@ class Cluvo_Rest {
 	/** Name of the honeypot input rendered by Cluvo_Form_Renderer. */
 	const HONEYPOT = 'cluvo_hp';
 
-	/** Fields Cluvo accepts on a submission (besides custom_fields). */
+	/** Fields CleverVerein accepts on a submission (besides custom_fields). */
 	const FIELDS = array(
 		'contact_type',
 		'first_name',
@@ -109,7 +109,7 @@ class Cluvo_Rest {
 	}
 
 	/**
-	 * Keep only the fields Cluvo knows. Repeater rows are re-indexed so they
+	 * Keep only the fields CleverVerein knows. Repeater rows are re-indexed so they
 	 * are stored as a list, not as an object with gaps.
 	 *
 	 * @param array $params Raw request body.

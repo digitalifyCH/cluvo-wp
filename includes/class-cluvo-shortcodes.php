@@ -2,7 +2,7 @@
 /**
  * Front-end shortcodes: [cluvo_form], [cluvo_events], [cluvo_news].
  *
- * Each shortcode targets one Cluvo account via account="<id>". When only a
+ * Each shortcode targets one CleverVerein account via account="<id>". When only a
  * single account is configured, the attribute may be omitted.
  */
 
@@ -219,7 +219,7 @@ class Cluvo_Shortcodes {
 	}
 
 	/**
-	 * One event on the same WordPress page: title image, date, place, content from the Cluvo editor and – for a series –
+	 * One event on the same WordPress page: title image, date, place, content from the CleverVerein editor and – for a series –
 	 * the next dates. Older events without editor content show their plain description.
 	 */
 	private function event_single( $id, $date, $account_id ) {
@@ -278,7 +278,7 @@ class Cluvo_Shortcodes {
 	}
 
 	/**
-	 * State of the registration with a link to the form on the club website (Cluvo: docs/anmeldungen.md).
+	 * State of the registration with a link to the form on the club website (CleverVerein: docs/anmeldungen.md).
 	 * The form itself stays on the club website – it sends the confirmation and handles the waitlist.
 	 */
 	private static function registration_box( $event ) {
@@ -320,7 +320,7 @@ class Cluvo_Shortcodes {
 		<div class="cluvo-event-detail__registration">
 			<p class="cluvo-event-detail__registration-facts"><?php echo esc_html( implode( ' · ', $facts ) ); ?></p>
 			<?php if ( $open && $members ) : ?>
-				<p class="cluvo-event-detail__registration-hint"><?php esc_html_e( 'Mitglieder melden sich in der Cluvo-App an.', 'cluvo' ); ?></p>
+				<p class="cluvo-event-detail__registration-hint"><?php esc_html_e( 'Mitglieder melden sich in der CleverVerein-App an.', 'cluvo' ); ?></p>
 			<?php elseif ( $open && $url ) : ?>
 				<a class="cluvo-button" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $full ? __( 'Auf die Warteliste', 'cluvo' ) : __( 'Zur Anmeldung', 'cluvo' ) ); ?></a>
 			<?php endif; ?>

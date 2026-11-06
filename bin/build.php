@@ -1,6 +1,6 @@
 <?php
 /**
- * Release builder for the Cluvo WordPress plugin.
+ * Release builder for the CleverVerein WordPress plugin.
  *
  * Produces, in dist/:
  *   - cluvo-<version>.zip   the installable plugin (top-level folder: cluvo/)
@@ -51,7 +51,7 @@ if ( array() === $changelog ) {
 	fail( "readme.txt: no changelog entries under \"= {$version} =\"" );
 }
 
-echo "Building Cluvo {$version}…\n";
+echo "Building CleverVerein {$version}…\n";
 
 if ( ! is_dir( $dist ) ) {
 	mkdir( $dist, 0755, true );
@@ -101,7 +101,7 @@ foreach ( array( '1x' => 'icon-128x128.png', '2x' => 'icon-256x256.png' ) as $si
 /* ---- info.json (read by the in-plugin updater) ------------------------ */
 
 $info = array(
-	'name'         => 'Cluvo',
+	'name'         => 'CleverVerein',
 	'slug'         => 'cluvo',
 	'version'      => $version,
 	'download_url' => "{$base}/{$zip_name}",
@@ -160,8 +160,8 @@ function landing_page( array $info ) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cluvo für WordPress {$version}</title>
-<meta name="description" content="Formulare, Veranstaltungen und News aus Cluvo auf deiner WordPress-Webseite. Version {$version} herunterladen.">
+<title>CleverVerein für WordPress {$version}</title>
+<meta name="description" content="Formulare, Veranstaltungen und News aus CleverVerein auf deiner WordPress-Webseite. Version {$version} herunterladen.">
 <link rel="icon" href="icon-128x128.png">
 <style>
 :root { --bg: #f4f5f3; --card: #fff; --text: #0b1512; --muted: #5d6470; --line: #e3e6e1; --accent: #009966; --accent-text: #fff; --code: #eef1ec; }
@@ -200,8 +200,8 @@ footer a { color: inherit; }
     <header>
       {$icon}
       <div>
-        <h1>Cluvo für WordPress</h1>
-        <p class="lead">Formulare, Veranstaltungen und News aus Cluvo auf deiner WordPress-Webseite.</p>
+        <h1>CleverVerein für WordPress</h1>
+        <p class="lead">Formulare, Veranstaltungen und News aus CleverVerein auf deiner WordPress-Webseite.</p>
       </div>
     </header>
     <div class="download">
@@ -213,12 +213,12 @@ footer a { color: inherit; }
   <section class="card">
     <h2>Installation</h2>
     {$info['sections']['installation']}
-    <p>Das Plugin braucht Cluvo Pro – in Cluvo Basic ist die Schnittstelle für WordPress gesperrt.</p>
+    <p>Das Plugin braucht CleverVerein im Plan Pro – in Basic ist die Schnittstelle für WordPress gesperrt.</p>
   </section>
 
   <section class="card">
     <h2>Updates</h2>
-    <p>Ist das Plugin installiert, holt WordPress neue Versionen von selbst hier ab. Sie erscheinen unter Dashboard → Aktualisierungen, auf Wunsch auch automatisch. Unter Einstellungen → Cluvo siehst du die installierte Version und kannst sofort nach Updates suchen.</p>
+    <p>Ist das Plugin installiert, holt WordPress neue Versionen von selbst hier ab. Sie erscheinen unter Dashboard → Aktualisierungen, auf Wunsch auch automatisch. Unter Einstellungen → CleverVerein siehst du die installierte Version und kannst sofort nach Updates suchen.</p>
   </section>
 
   <section class="card">
@@ -227,7 +227,7 @@ footer a { color: inherit; }
   </section>
 
   <footer>
-    <a href="https://www.cluvo.ch">Cluvo</a> · Vereinssoftware aus der Schweiz · <a href="https://www.cluvo.ch/hilfe">Hilfe</a> · <a href="https://www.cluvo.ch/impressum">Impressum</a>
+    <a href="https://www.cluvo.ch">CleverVerein</a> · Vereinssoftware aus der Schweiz · <a href="https://www.cluvo.ch/hilfe">Hilfe</a> · <a href="https://www.cluvo.ch/impressum">Impressum</a>
   </footer>
 </main>
 </body>
